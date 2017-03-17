@@ -1,0 +1,183 @@
+/*Your styles*/
+
+ body {
+    margin: 4px 6px 6px 6px;
+}
+
+#content {
+    margin-right:auto;
+    margin-left:auto;
+    vertical-align:middle;
+    width:100%;
+}
+
+button:focus {
+    border:0 !important;
+    box-shadow: none !important;
+}
+
+/*
+Those classes will be edited at runtime with values specified
+by the settings of the CC application
+*/
+.hostFontColor{}
+.hostFontFamily{}
+.hostFontSize{}
+
+/*font family, color and size*/
+.hostFont{}
+/*background color*/
+.hostBgd{}
+/*lighter background color*/
+.hostBgdLight{}
+/*darker background color*/
+.hostBgdDark{}
+/*background color and font*/
+.hostElt{}
+
+#controls {
+    width: 100%;
+    margin: auto;
+    padding: 5px 5px 2px 5px;
+    text-align: center;
+    overflow: auto;
+    height:50px;
+    box-sizing: border-box;
+    background: rgba(63, 64, 65, 1);
+}
+
+#controls.disabled {
+    background: rgba(63, 64, 65, .3);
+}
+
+div {
+    display: inline-block;
+}
+
+button {
+    width: 100%;
+    height: 40px;
+    padding:0 !important;
+    display: inline-block;
+    text-align: center;
+}
+
+img {
+    padding-top: 4px;
+}
+
+.third {
+    width: 31%;
+    margin-bottom: 3px;
+    display: inline-block;
+    text-align: center;
+}
+
+.fourth {
+    width: 23%;
+    margin-bottom: 3px;
+    display: inline-block;
+    text-align: center;
+}
+
+.fifth {
+    width: 18.8%;
+    margin-bottom: 3px;
+    display: inline-block;
+    text-align: center;
+}
+
+pre {
+    display: inherit;
+    font-family: inherit;
+    margin-top: 3px;
+    margin-right: inherit;
+    margin-bottom: inherit;
+    margin-left: inherit;
+    white-space: pre-wrap;
+}
+
+.hostButton {
+    border:1px solid;
+    border-radius:2px;
+    height:20px;
+    vertical-align:bottom;
+    font-family:inherit;
+    color:inherit;
+    font-size:inherit;
+}
+
+.dPopup {
+    position: absolute;
+    top: 40px;
+    left: 25%;
+    right: 25%;
+    text-align: center;
+    white-space: normal;
+    overflow: auto;
+    padding-left: 10px;
+    padding-right 10px;
+}
+
+.notifier {
+    display: none;
+}
+
+.notifierText {
+    font-size: 10pt;
+}
+
+.notifierClose {
+    margin-bottom: 10px;
+}
+
+.topcoat-select{
+    margin:0;
+    font:inherit;
+    background:0 0;
+    outline:0;
+    box-sizing:border-box;
+    background-clip:padding-box;
+    position:relative;
+    display:inline-block}
+.topcoat-select:disabled{
+    opacity:.3;
+    cursor:default;pointer-events:none}
+.topcoat-select{
+    -webkit-appearance:none;
+    -moz-appearance:none;appearance:none}
+.topcoat-select::-ms-expand{
+    display:none}
+.topcoat-select{
+    -webkit-user-select:none;
+    -moz-user-select:none;-ms-user-select:none;user-select:none;
+    cursor:pointer;
+    text-indent:1px;
+    text-overflow:'';
+    padding:.25rem .75rem;
+    /*font-size:1rem;
+    font-weight:400;
+    line-height:1.313rem;*/
+    letter-spacing:0;color:hsla(180,2%,78%,1);
+    text-shadow:0 -1px hsla(0,0%,0%,.69);
+    vertical-align:top;
+    border-radius:4px;
+    background-color:hsla(180,1%,35%,1);
+    box-shadow:inset 0 1px hsla(0,0%,45%,1);
+    border:1px solid hsla(180,1%,20%,1);
+    background-image:url(../img/dropdown.svg);
+    background-repeat:no-repeat;
+    background-position:center right;
+    min-width:3.4rem
+}
+.topcoat-select:hover{
+        background-color:hsla(200,2%,39%,1);
+}
+.topcoat-select:active{background-color:hsla(210,2%,25%,1);
+        box-shadow:inset 0 1px hsla(0,0%,0%,.05);
+}
+.topcoat-select:focus{border:1px solid hsla(227,100%,50%,1);
+        box-shadow:0 0 0 2px hsla(208,82%,69%,1);
+        outline:0,
+}
+</style>

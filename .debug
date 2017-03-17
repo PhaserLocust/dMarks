@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<ExtensionList>
+    <Extension Id="com.rps.dmarks">
+        <HostList>
+            
+            <!-- Illustrator -->
+            <Host Name="ILST" Port="8183"/>
+          
+        </HostList>
+    </Extension>
+</ExtensionList>
