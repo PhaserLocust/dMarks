@@ -6,8 +6,6 @@ $(document).ready(function () {
     
     var csInterface = new CSInterface();
     
-    
-    
     function init() {
         themeManager.init();
     }
@@ -23,7 +21,6 @@ $(document).ready(function () {
     }
     
     function onDocDeactivated(event) {
-
     }
         
     function onDocActivated(event) {
@@ -40,8 +37,12 @@ $(document).ready(function () {
     
     //////////////////////////////////
     
+    $('#addSlit').click(function () {
+        console.log(Date() + ' addSlit');
+        csInterface.evalScript('addSlit()');
+    });
+    
     $('#deny').click(function () {
-        
         closeNotifier('confirmation');
     });
         
@@ -58,7 +59,6 @@ $(document).ready(function () {
 
         closeNotifier('retry');
     });
-
     
     //////////////////////////////////
     
@@ -66,7 +66,7 @@ $(document).ready(function () {
     init();
     
     //listen for ai document deactivations
-    csInterface.addEventListener("documentAfterDeactivate", onDocDeactivated);
+    //csInterface.addEventListener("documentAfterDeactivate", onDocDeactivated);
     
     //listen for ai document activations
     csInterface.addEventListener("documentAfterActivate", onDocActivated);

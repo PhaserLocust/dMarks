@@ -1,6 +1,25 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global $, Folder*/
 
+function cornerCut() {
+    var selected = app.activeDocument.selection;
+    
+    var thePosition = selected.position;
+    var x = thePosition[0] - 1;
+    var y = thePosition[1] + 1;
+    var theHeight = selected.height;
+    var theWidth = selected.width;
+    var theFill = {class:spot color info, tint:100.0, spot:spot "Indigo Die"};
+    var theLayer = app.activeDocument.layers.getByName("Job Finishing Marks - CL&D Digital")
+    
+    var pathPoints = [];
+
+    var newPath = app.activeDocument.pathItems.add();
+    newPath.setEntirePath(pathPoints);
+    newPath.name = "corner 1";
+    
+}
+
 function addSlit(orientation, cutTrue, whiteTrue) {
     //get selected path
     
