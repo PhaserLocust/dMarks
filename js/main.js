@@ -37,9 +37,20 @@ $(document).ready(function () {
     
     //////////////////////////////////
     
-    $('#addSlit').click(function () {
-        console.log(Date() + ' addSlit');
-        csInterface.evalScript('addSlit()');
+    $('#cornerCut').click(function () {
+        csInterface.evalScript('cornerCut()');
+    });
+    
+    $('#cornerCutInvL').click(function () {
+        csInterface.evalScript('cornerCutInvL()');
+    });
+    
+    $('#cornerCutInvP').click(function () {
+        csInterface.evalScript('cornerCutInvP()');
+    });
+    
+    $('#cameraMarks').click(function () {
+        csInterface.evalScript('cameraMarks()');
     });
     
     $('#deny').click(function () {
