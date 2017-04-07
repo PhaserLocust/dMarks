@@ -1,0 +1,7 @@
+////////////////////////////////
+//    |) Marks Change Log    //
+////////////////////////////////
+
+04/??/17 v1.0.0
+    - Initial release
+    - Includes: Corner Marks x3, Camera Marks, Cutter Guide Box, Sleeve Info Left, Sleeve Info Right

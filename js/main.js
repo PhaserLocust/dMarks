@@ -22,10 +22,9 @@ $(document).ready(function () {
     
     function onDocDeactivated(event) {
     }
-        
-    function onDocActivated(event) {
-        //disable if doc not open
-        var name = $(event.data).find("name").text();
+       
+    function setEnabled(name) {
+        // disables ui if passed ''
         if (name === '') {
             $('button').prop('disabled', true);
             $("#controls").addClass("disabled");
@@ -35,23 +34,56 @@ $(document).ready(function () {
         $("#controls").removeClass("disabled");
     }
     
+    
+    function onDocActivated(event) {
+        var name;
+        if (event === '') {
+            csInterface.evalScript('docIsOpen()', function (res) {
+                console.log("the result: " + res);
+                if (res === 'true') {
+                    setEnabled('enable');
+                } else {
+                    setEnabled('');
+                }
+            });
+            return;
+        } else {
+            name = $(event.data).find("name").text();
+            setEnabled(name);
+        }
+    }
+    
     //////////////////////////////////
     
     $('#cornerCut').click(function () {
-        csInterface.evalScript('cornerCut()');
+        csInterface.evalScript('cornerCut("")');
     });
     
     $('#cornerCutInvL').click(function () {
-        csInterface.evalScript('cornerCutInvL()');
+        csInterface.evalScript('cornerCutInvL("InvL")');
     });
     
     $('#cornerCutInvP').click(function () {
-        csInterface.evalScript('cornerCutInvP()');
+        csInterface.evalScript('cornerCutInvP("InvP")');
     });
     
     $('#cameraMarks').click(function () {
         csInterface.evalScript('cameraMarks()');
     });
+    
+    $('#cutterGuides').click(function () {
+        csInterface.evalScript('cutterGuides()');
+    });
+    
+    $('#sleeveInfoLeft').click(function () {
+        csInterface.evalScript('sleeveInfo("Left")');
+    });
+    
+    $('#sleeveInfoRight').click(function () {
+        csInterface.evalScript('sleeveInfo("Right")');
+    });
+    
+    ////
     
     $('#deny').click(function () {
         closeNotifier('confirmation');
@@ -85,10 +117,8 @@ $(document).ready(function () {
     //listen for ai document save
     //csInterface.addEventListener("documentAfterSave", onDocSaved);
     
-    /*
-    
-    csInterface.evalScript('docURL()');
-    
-    */
-    
+    $(window).load(function () {
+        console.log(Date() + ' window loaded');
+        onDocActivated('');
+    });
 });
