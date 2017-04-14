@@ -4,4 +4,4 @@
 
 04/??/17 v1.0.0
     - Initial release
-    - Includes: Corner Marks x3, Camera Marks, Cutter Guide Box, Sleeve Info Left, Sleeve Info Right
+    - Includes: Corner Marks, Camera Marks, Cutter Guide, Sleeve Info Left, Sleeve Info Right

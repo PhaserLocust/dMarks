@@ -34,12 +34,12 @@
 							<Width>240</Width>
 						</Size>
                         <MinSize>
-                            <Height>58</Height>
-                            <Width>48</Width>
+                            <Height>38</Height>
+                            <Width>36</Width>
                         </MinSize>
                         <MaxSize>
-                            <Height>120</Height>
-                            <Width>512</Width>
+                            <Height>242</Height>
+                            <Width>240</Width>
                         </MaxSize>
 					</Geometry>
 					<Icons>

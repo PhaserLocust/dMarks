@@ -1,5 +1,5 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global $, Folder, app, CMYKColor, SpotColor, NoColor, StrokeJoin, roundTo, StrokeCap, Justification, textFonts*/
+/*global $, Folder, app, CMYKColor, SpotColor, NoColor, StrokeJoin, roundTo, StrokeCap, Justification, textFonts, ElementPlacement, Transformation*/
 
 // returns bool
 function docIsOpen() {
@@ -37,9 +37,11 @@ function layerExists(layerName) {
     return false;
 }
 
-function prepLayer(layerRef) {
+function prepLayer(layerName) {
+    var layerRef = app.activeDocument.layers.getByName(layerName);
     layerRef.locked = false;
     layerRef.visible = true;
+    return layerRef;
 }
 
 //takes array of needed names, displays message, returns bool
@@ -149,8 +151,7 @@ function cornerCut(type) {
         fillColor: dieColor,
         fillOverprint: false
     };
-    var mkLayer = doc.layers.getByName("Job Finishing Marks - CL&D Digital");
-    prepLayer(mkLayer);
+    var mkLayer = prepLayer("Job Finishing Marks - CL&D Digital");
     
     var newGroup = mkLayer.groupItems.add();
     newGroup.name = groupName;
@@ -171,6 +172,7 @@ function cornerCut(type) {
         addPath(newGroup, cornerPts, cornerProps, '', [sel.x + sel.wd, sel.y + 1], "top right");
         addPath(newGroup, cornerPts, cornerProps, -90, [sel.x - 10, sel.y + 1], "top left");
     }
+    doc.selection = null;
 }
 
 function cameraMarks() {
@@ -187,8 +189,7 @@ function cameraMarks() {
     var blkColor = new SpotColor();
     blkColor.spot = doc.spots.getByName("IndigoK");
     blkColor.tint = 100;
-    var camLayer = doc.layers.getByName("Camera Marks - CL&D Digital");
-    prepLayer(camLayer);
+    var camLayer = prepLayer("Camera Marks - CL&D Digital");
     var pathProps = {
         closed: true,
         stroked: false,
@@ -232,6 +233,7 @@ function cameraMarks() {
         newCirc.fillColor = blkColor;
         newCirc.name = "Circle";
     }
+    doc.selection = null;
 }
 
 function cutterGuides() {
@@ -246,12 +248,17 @@ function cutterGuides() {
     var blkColor = new SpotColor();
     blkColor.spot = doc.spots.getByName("IndigoK");
     blkColor.tint = 100;
-    var guideLayer = doc.layers.getByName("Cutter Guide - CL&D Digital");
-    prepLayer(guideLayer);
+    var guideLayer = prepLayer("Cutter Guide - CL&D Digital");
     var pathProps = {
-        closed: true, stroked: true, strokeOverprint: false,
-        strokeWidth: 0.5, strokeJoin: StrokeJoin.MITERENDJOIN,
-        filled: false, fillColor: noColor, fillOverprint: false
+        closed: true,
+        stroked: true,
+        strokeColor: blkColor,
+        strokeOverprint: false,
+        strokeWidth: 0.5,
+        strokeJoin: StrokeJoin.MITERENDJOIN,
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
     };
     var guideGroup = guideLayer.groupItems.add();
     guideGroup.name = "|) Cutter Guide";
@@ -264,8 +271,22 @@ function cutterGuides() {
             newRect[theProp] = pathProps[theProp];
         }
     }
-    newRect.strokeColor = blkColor;
     newRect.name = "Rectangle Guide";
+    
+    var newPath = doc.selection[0].duplicate(guideGroup, ElementPlacement.INSIDE);
+    doc.selection = [newPath];
+    for (theProp in pathProps) {
+        if (pathProps.hasOwnProperty(theProp)) {
+            newPath[theProp] = pathProps[theProp];
+        }
+    }
+    newPath.name = "Contour Guide";
+    //apply offset effect, jntp 2 = mitre, 1 = bevel, 0 = round
+    var xmlstring = '<LiveEffect name="Adobe Offset Path"><Dict data="R mlim 4 R ofst 4.5 I jntp 0"/></LiveEffect>';
+    newPath.applyEffect(xmlstring);
+    app.redraw();
+    app.executeMenuCommand('expandStyle');
+    doc.selection = null;
 }
 
 function roundTo(decimalPlaces, number) {
@@ -283,36 +304,83 @@ function sleeveInfo(clearSide) {
     var alertRef = "|) Marks - Sleeve Info";
     var doc = app.activeDocument;
     var sel = doc.selection;
-    if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Info - CL&D Digital"], [])) {
+    if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Info - CL&D Digital", "Slit - CL&D Digital"], ["5Indigo", "IndigoK"])) {
         return;
     }
     sel = selObj(sel[0]);
     var noColor = new NoColor();
-    var wtColor = newCMYKcolor(0, 0, 0, 0);
+    var wtColor = new SpotColor();
+    wtColor.spot = doc.spots.getByName("5Indigo");
+    wtColor.tint = 100;
+    var blkColor = new SpotColor();
+    blkColor.spot = doc.spots.getByName("IndigoK");
+    blkColor.tint = 100;
     var dimColor = newCMYKcolor(75, 0, 100, 0);
     var dimPthProps = {
-        closed: false, stroked: true, strokeOverprint: false, strokeWidth: 0.5,
-        strokeColor: dimColor, strokeCap: StrokeCap.BUTTENDCAP, strokeDashes: [],
-        filled: false, fillColor: noColor, fillOverprint: false
+        closed: false,
+        stroked: true,
+        strokeOverprint: false,
+        strokeWidth: 0.5,
+        strokeColor: dimColor,
+        strokeCap: StrokeCap.BUTTENDCAP,
+        strokeDashes: [],
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
     };
-    var dimBoxProps = {name: 'box',
-        closed: true, stroked: false, strokeOverprint: false,
-        filled: true, fillColor: wtColor, fillOverprint: false
+    var arwPthProps = {
+        closed: true,
+        stroked: false,
+        strokeOverprint: false,
+        filled: true,
+        fillColor: dimColor,
+        fillOverprint: false
     };
     var locColor = newCMYKcolor(0, 100, 0, 0);
     var locPthProps = {
-        closed: false, stroked: true, strokeOverprint: false, strokeWidth: 0.5,
-        strokeColor: locColor, strokeCap: StrokeCap.BUTTENDCAP, strokeDashes: [3, 2],
-        filled: false, fillColor: noColor, fillOverprint: false
+        closed: false,
+        stroked: true,
+        strokeOverprint: false,
+        strokeWidth: 0.5,
+        strokeColor: locColor,
+        strokeCap: StrokeCap.BUTTENDCAP,
+        strokeDashes: [3, 2],
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
     };
-    var infoLayer = doc.layers.getByName("Info - CL&D Digital");
-    prepLayer(infoLayer);
+    var sltPth1Props = {
+        closed: false,
+        stroked: true,
+        strokeOverprint: false,
+        strokeWidth: 1,
+        strokeColor: blkColor,
+        strokeCap: StrokeCap.BUTTENDCAP,
+        strokeDashes: [],
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
+    };
+    var sltPth2Props = {
+        closed: false,
+        stroked: true,
+        strokeOverprint: false,
+        strokeWidth: 1,
+        strokeColor: wtColor,
+        strokeCap: StrokeCap.BUTTENDCAP,
+        strokeDashes: [12],
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
+    };
+    var infoLayer = prepLayer("Info - CL&D Digital");
+    var sltLayer = prepLayer("Slit - CL&D Digital");
     
     //calc info (1mm = 2.83464567pts)
     var layflat = (sel.wd - 5.66929134) / 2;
     var dimY = sel.y + 14;
     var locY = sel.y - sel.ht;
-    var lOffset, rOffset, offsetPts;
+    var lOffset, rOffset, sltRotate, offsetPts;
     if (clearSide === 'Left') {
         rOffset = layflat * 0.4; //short side offset
         lOffset = layflat - rOffset; // long side offset
@@ -320,28 +388,27 @@ function sleeveInfo(clearSide) {
         lOffset = layflat * 0.4; //short side offset
         rOffset = layflat - lOffset; // long side offset
     }
+    var sltX = sel.x + sel.wd + (4 * 2.83464567); // 4mm bleed
+    var sltPts = [[sltX, sel.y], [sltX, sel.y - sel.ht]];
     var dims = [ptsToMM(rOffset, 2), ptsToMM(layflat, 2), ptsToMM(lOffset, 2)]; //right to left
     offsetPts = [[sel.x + sel.wd, dimY], [sel.x + lOffset + layflat, dimY],
                  [sel.x + lOffset, dimY], [sel.x, dimY]]; //right to left
-
+    
+    var arwLeftPts = [[0, 0], [3.5, 1.75], [3.5, -1.75]];
+    var arwRightPts = [[0, 0], [-3.5, 1.75], [-3.5, -1.75]];
+    
     //build art:
     var slvInfoGroup = infoLayer.groupItems.add();
     slvInfoGroup.name = "|) Sleeve Info KEY";
-    
     var dimGroup = slvInfoGroup.groupItems.add();
     dimGroup.name = "dimensions";
     
-    var i, horPts, vertPts, dimBox, theProp;
+    var i;
+    var hor1Pts, hor2Pts, vertPts, theProp, dimText, dimSubGroup;
     for (i = 0; i < 3; i++) {
-        horPts = [offsetPts[i], offsetPts[i + 1]];
-        vertPts = [[offsetPts[i][0], offsetPts[i][1] - 4], [offsetPts[i][0], offsetPts[i][1] + 4]];
-        addPath(dimGroup, horPts, dimPthProps, '', '', "width");
-        addPath(dimGroup, vertPts, dimPthProps, '', '', "end");
-        if (i === 2) {
-            addPath(dimGroup, [[offsetPts[3][0], offsetPts[3][1] - 4],
-                               [offsetPts[3][0], offsetPts[3][1] + 4]], dimPthProps, '', '', "end");
-        }
-        var dimText = dimGroup.textFrames.add();
+        dimSubGroup = dimGroup.groupItems.add();
+        dimSubGroup.name = 'width';
+        dimText = dimSubGroup.textFrames.add();
         dimText.contents = i === 1 ? dims[i] + 'mm LayFlat' : dims[i] + 'mm';
         dimText.left = offsetPts[i][0] - ((offsetPts[i][0] - offsetPts[i + 1][0]) / 2);
         dimText.top = dimY + 6.25;
@@ -350,14 +417,23 @@ function sleeveInfo(clearSide) {
         dimText.paragraphs[0].characterAttributes.size = 10;
         dimText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
         
-        dimBox = dimGroup.pathItems.rectangle(dimText.position[1], dimText.position[0] - 3,
-                                              dimText.width + 6, dimText.height, false);
-        for (theProp in dimBoxProps) {
-            if (dimBoxProps.hasOwnProperty(theProp)) {
-                dimBox[theProp] = dimBoxProps[theProp];
-            }
+        hor1Pts = [[offsetPts[i][0] - 2, dimY],
+                   [dimText.position[0] + dimText.width + 3, dimY]];
+        hor2Pts = [[dimText.position[0] - 3, dimY],
+                   [offsetPts[i + 1][0] + 2, dimY]];
+        vertPts = [[offsetPts[i][0], offsetPts[i][1] - 4], [offsetPts[i][0], offsetPts[i][1] + 4]];
+        
+        addPath(dimSubGroup, vertPts, dimPthProps, '', '', "end path");
+        addPath(dimSubGroup, hor1Pts, dimPthProps, '', '', "right path");
+        addPath(dimSubGroup, arwRightPts, arwPthProps, '',
+                [offsetPts[i][0] - 3.5, dimY + 1.75], "right arrowhead");
+        addPath(dimSubGroup, hor2Pts, dimPthProps, '', '', "left path");
+        addPath(dimSubGroup, arwLeftPts, arwPthProps, '',
+                [offsetPts[i + 1][0], dimY + 1.75], "left arrowhead");
+        if (i === 2) {
+            addPath(dimSubGroup, [[offsetPts[3][0], offsetPts[3][1] - 4],
+                               [offsetPts[3][0], offsetPts[3][1] + 4]], dimPthProps, '', '', "end path");
         }
-        dimBox.move(dimText, ElementPlacement.PLACEAFTER);
     }
     
     var locGroup = slvInfoGroup.groupItems.add();
@@ -383,7 +459,77 @@ function sleeveInfo(clearSide) {
         foldText.top = locY - 15;
     } else {
         foldText.top = locY - 3;
+        var locSubGroup = locGroup.groupItems.add();
+        locSubGroup.name = 'arrows';
+        locPthProps.strokeDashes = [];
+        arwPthProps.fillColor = locColor;
+        addPath(locSubGroup, [[offsetPts[1][0] - 7, locY - 8], [foldText.left + foldText.width + 5, locY - 8]],
+                locPthProps, '', '', "right path");
+        addPath(locSubGroup, arwRightPts, arwPthProps, '',
+                [offsetPts[1][0] - 5 - 3.5, locY - 8 + 1.75], "right arrowhead");
+        addPath(locSubGroup, [[offsetPts[2][0] + 7, locY - 8], [foldText.left - 5, locY - 8]],
+                locPthProps, '', '', "left path");
+        addPath(dimSubGroup, arwLeftPts, arwPthProps, '',
+                [offsetPts[2][0] + 5, locY - 8 + 1.75], "left arrowhead");
     }
+    
+    //slit marks:
+    var sltGroup = sltLayer.groupItems.add();
+    sltGroup.name = "|) Slit Marks";
+    
+    //make vert slit lines w/o graphic styles:
+    var sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'slit guide';
+    var slt1 = addPath(sltSubGroup, sltPts, sltPth1Props, '', '', 'black line');
+    var slt2 = addPath(sltSubGroup, sltPts, sltPth2Props, '', '', 'white dashes');
+    sltSubGroup.translate(0.5);
+    /*
+    //make vert slit lines with graphic styles(named style must exist in document, not style library):
+    var sltStyle = doc.graphicStyles.getByName("Slit Lines-Black & 5Indigo");
+    var slt1 = addPath(sltGroup, sltPts, sltPth1Props, '', '', 'slit guide');
+    sltStyle.applyTo(slt1);
+    slt1.translate(0.5);
+    */
+    
+    //make hor. marks for finishing w/o graphic styles
+    sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'top repeat guide';
+    sltPth2Props.strokeDashes = [7];
+    addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth1Props, '', '', 'black line');
+    addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth2Props, '', '', 'white dashes');
+    sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'bottom repeat guide';
+    addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'black line');
+    addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth2Props, '', '', 'white dashes');
+    /*
+    //make hor. marks for finishing with graphic styles(named style must exist in document, not style library)
+    sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth1Props, '', '', 'top repeat guide'));
+    sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'bottom repeat guide'));
+    */
+    
+    //make slit point text
+    var sltText = sltGroup.textFrames.add();
+    sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
+    //sltText.name = 'actualDate:{SLITWIDTH}';
+    sltText.left = sltX + 1;
+    sltText.top = sel.y + 5;
+    sltText.paragraphs[0].paragraphAttributes.justification = Justification.LEFT;
+    sltText.paragraphs[0].characterAttributes.fillColor = blkColor;
+    sltText.paragraphs[0].characterAttributes.size = 10;
+    sltText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
+    sltText.rotate(-90, 1, 1, 1, 1, Transformation.BOTTOMLEFT);
+    
+    sltText = sltText.duplicate(sltText, ElementPlacement.PLACEAFTER);
+    sltText.paragraphs[0].characterAttributes.stroked = true;
+    sltText.paragraphs[0].characterAttributes.strokeColor = wtColor;
+    sltText.paragraphs[0].characterAttributes.strokeWeight = 2;
+    
+    // rotate slit group if needed:
+    if (clearSide === 'Right') {
+        sltGroup.rotate(180, 1, 1, 1, 1, Transformation.CENTER);
+        sltGroup.translate(-(sel.wd + (8 * 2.83464567) + sltGroup.width));
+    }
+    doc.selection = null;
 }
 
 function slitMarks(orientation, cutTrue, whiteTrue) {
@@ -446,3 +592,5 @@ function foldQuad(orientation) {
     // for side gusset bag
 }
 
+//sleeveInfo ('Left');
+//sleeveInfo ('Right');

@@ -34,7 +34,6 @@ $(document).ready(function () {
         $("#controls").removeClass("disabled");
     }
     
-    
     function onDocActivated(event) {
         var name;
         if (event === '') {
@@ -60,11 +59,11 @@ $(document).ready(function () {
     });
     
     $('#cornerCutInvL').click(function () {
-        csInterface.evalScript('cornerCutInvL("InvL")');
+        csInterface.evalScript('cornerCut("InvL")');
     });
     
     $('#cornerCutInvP').click(function () {
-        csInterface.evalScript('cornerCutInvP("InvP")');
+        csInterface.evalScript('cornerCut("InvP")');
     });
     
     $('#cameraMarks').click(function () {
