@@ -30,16 +30,16 @@
 					<Menu>|) Marks</Menu>
 					<Geometry>
 						<Size>
-							<Height>120</Height>
+							<Height>72</Height>
 							<Width>240</Width>
 						</Size>
                         <MinSize>
-                            <Height>38</Height>
+                            <Height>36</Height>
                             <Width>36</Width>
                         </MinSize>
                         <MaxSize>
-                            <Height>242</Height>
-                            <Width>240</Width>
+                            <Height>412</Height>
+                            <Width>406</Width>
                         </MaxSize>
 					</Geometry>
 					<Icons>

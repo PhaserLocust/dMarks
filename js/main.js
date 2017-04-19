@@ -38,7 +38,7 @@ $(document).ready(function () {
         var name;
         if (event === '') {
             csInterface.evalScript('docIsOpen()', function (res) {
-                console.log("the result: " + res);
+                //console.log("the result: " + res);
                 if (res === 'true') {
                     setEnabled('enable');
                 } else {
@@ -70,6 +70,10 @@ $(document).ready(function () {
         csInterface.evalScript('cameraMarks()');
     });
     
+    $('#encloseRect').click(function () {
+        csInterface.evalScript('encloseRect()');
+    });
+    
     $('#cutterGuides').click(function () {
         csInterface.evalScript('cutterGuides()');
     });
@@ -82,7 +86,23 @@ $(document).ready(function () {
         csInterface.evalScript('sleeveInfo("Right")');
     });
     
-    ////
+    $('#cutLand').click(function () {
+        csInterface.evalScript('cutMarks("Landscape")');
+    });
+    
+    $('#cutPort').click(function () {
+        csInterface.evalScript('cutMarks("Portrait")');
+    });
+    
+    $('#slitLand').click(function () {
+        csInterface.evalScript('slitMarks("Landscape", true)');
+    });
+    
+    $('#slitPort').click(function () {
+        csInterface.evalScript('slitMarks("Portrait", true)');
+    });
+    
+    //////////
     
     $('#deny').click(function () {
         closeNotifier('confirmation');

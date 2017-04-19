@@ -2,6 +2,6 @@
 //    |) Marks Change Log    //
 ////////////////////////////////
 
-04/??/17 v1.0.0
+04/18/17 v1.0.0
     - Initial release
-    - Includes: Corner Marks, Camera Marks, Cutter Guide, Sleeve Info Left, Sleeve Info Right
+    - Includes: Corner Marks, Camera Marks, Enclosing Rectangle, Cutter Guide, Sleeve Info, Cut Marks, & Slit Marks

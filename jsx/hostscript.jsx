@@ -117,7 +117,8 @@ function selObj(pathRef) {
         x: pathRef.position[0],
         y: pathRef.position[1],
         ht: pathRef.height,
-        wd: pathRef.width
+        wd: pathRef.width,
+        lyr: pathRef.layer
     };
     return selectedObj;
 }
@@ -233,6 +234,43 @@ function cameraMarks() {
         newCirc.fillColor = blkColor;
         newCirc.name = "Circle";
     }
+    doc.selection = null;
+}
+
+function encloseRect() {
+    var alertRef = "|) Marks - Enclosing Rectangle";
+    var doc = app.activeDocument;
+    var sel = doc.selection;
+    if (!prereqCheck(alertRef, sel, 1, 'PathItem', [], ["IndigoK"])) {
+        return;
+    }
+    sel = selObj(sel[0]);
+    var noColor = new NoColor();
+    var blkColor = new SpotColor();
+    blkColor.spot = doc.spots.getByName("IndigoK");
+    blkColor.tint = 100;
+    var pathProps = {
+        closed: true,
+        stroked: true,
+        strokeColor: blkColor,
+        strokeOverprint: false,
+        strokeWidth: 0.5,
+        strokeJoin: StrokeJoin.MITERENDJOIN,
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
+    };
+    
+    var newRect = sel.lyr.pathItems.rectangle(sel.y, sel.x,
+                                                 sel.wd, sel.ht, false);
+    newRect.move(doc.selection[0], ElementPlacement.PLACEBEFORE);
+    var theProp;
+    for (theProp in pathProps) {
+        if (pathProps.hasOwnProperty(theProp)) {
+            newRect[theProp] = pathProps[theProp];
+        }
+    }
+    newRect.name = "|) Enclosing Rectangle";
     doc.selection = null;
 }
 
@@ -493,12 +531,12 @@ function sleeveInfo(clearSide) {
     
     //make hor. marks for finishing w/o graphic styles
     sltSubGroup = sltGroup.groupItems.add();
-    sltSubGroup.name = 'top repeat guide';
+    sltSubGroup.name = 'top repeat guides';
     sltPth2Props.strokeDashes = [7];
     addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth1Props, '', '', 'black line');
     addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth2Props, '', '', 'white dashes');
     sltSubGroup = sltGroup.groupItems.add();
-    sltSubGroup.name = 'bottom repeat guide';
+    sltSubGroup.name = 'bottom repeat guides';
     addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'black line');
     addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth2Props, '', '', 'white dashes');
     /*
@@ -508,21 +546,34 @@ function sleeveInfo(clearSide) {
     */
     
     //make slit point text
-    var sltText = sltGroup.textFrames.add();
-    sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
-    //sltText.name = 'actualDate:{SLITWIDTH}';
-    sltText.left = sltX + 1;
-    sltText.top = sel.y + 5;
-    sltText.paragraphs[0].paragraphAttributes.justification = Justification.LEFT;
-    sltText.paragraphs[0].characterAttributes.fillColor = blkColor;
-    sltText.paragraphs[0].characterAttributes.size = 10;
-    sltText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
+    sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'slit width';
+    var sltText = sltSubGroup.textFrames.add();
+    if (sel.ht < 215) {
+        // 2 lines of text
+        sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm\nLF ≥ ' + ptsToMM(layflat, 2) + 'mm';
+        //sltText.name = 'actualDate:{SLITWIDTH}';
+        sltText.left = sltX + 1;
+        sltText.top = sel.y + 19;
+    } else {
+        sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
+        //sltText.name = 'actualDate:{SLITWIDTH}';
+        sltText.left = sltX + 1;
+        sltText.top = sel.y + 8;
+    }
+    for (i = 0; i < sltText.paragraphs.length; i++) {
+        sltText.paragraphs[i].paragraphAttributes.justification = Justification.LEFT;
+        sltText.paragraphs[i].characterAttributes.fillColor = blkColor;
+        sltText.paragraphs[i].characterAttributes.size = 10;
+        sltText.paragraphs[i].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
+    }
     sltText.rotate(-90, 1, 1, 1, 1, Transformation.BOTTOMLEFT);
-    
     sltText = sltText.duplicate(sltText, ElementPlacement.PLACEAFTER);
-    sltText.paragraphs[0].characterAttributes.stroked = true;
-    sltText.paragraphs[0].characterAttributes.strokeColor = wtColor;
-    sltText.paragraphs[0].characterAttributes.strokeWeight = 2;
+    for (i = 0; i < sltText.paragraphs.length; i++) {
+        sltText.paragraphs[i].characterAttributes.stroked = true;
+        sltText.paragraphs[i].characterAttributes.strokeColor = wtColor;
+        sltText.paragraphs[i].characterAttributes.strokeWeight = 2;
+    }
     
     // rotate slit group if needed:
     if (clearSide === 'Right') {
@@ -532,24 +583,186 @@ function sleeveInfo(clearSide) {
     doc.selection = null;
 }
 
-function slitMarks(orientation, cutTrue, whiteTrue) {
-    //get selected path
+function cutMarks(orientation) {
+    var alertRef = "|) Marks - " + orientation + " Cut Marks";
+    var doc = app.activeDocument;
+    var sel = doc.selection;
+    if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Finishing Marks - CL&D Digital"], ["IndigoK"])) {
+        return;
+    }
+    sel = selObj(sel[0]);
+    var dkColor = new SpotColor();
+    dkColor.spot = doc.spots.getByName("IndigoK");
+    dkColor.tint = 60;
+    var dkProps = {
+        closed: true,
+        stroked: false,
+        filled: true,
+        fillColor: dkColor,
+        fillOverprint: true
+    };
+    var ltColor = newCMYKcolor(0, 0, 0, 0);
+    var ltProps = {
+        closed: true,
+        stroked: false,
+        filled: true,
+        fillColor: ltColor,
+        fillOverprint: false,
+        opacity: 75
+    };
+    var cutPts = [[0, 0], [0, 0.5], [22.5, 0.5], [22.5, 0]];
+    var mkLayer = prepLayer("Finishing Marks - CL&D Digital");
     
-    //if path not valid, return
+    var rot, pos;
+    if (orientation === 'Landscape') {
+        rot = 90;
+        pos = [[sel.x + sel.wd - 0.5, sel.y + 9], [sel.x + sel.wd - 0.5, sel.y - sel.ht + 13.5],
+                     [sel.x, sel.y - sel.ht + 13.5], [sel.x, sel.y + 9]];
+    } else if (orientation === 'Portrait') {
+        rot = '';
+        pos = [[sel.x + sel.wd - 13.5, sel.y - sel.ht + 0.5], [sel.x - 9, sel.y - sel.ht + 0.5],
+                    [sel.x + sel.wd - 13.5, sel.y], [sel.x - 9, sel.y]];
+    }
     
-    //get dims, calc slit line location by dims and orientation
+    var newGroup = mkLayer.groupItems.add();
+    newGroup.name = "|) Cut Marks";
+    addPath(newGroup, cutPts, dkProps, rot, pos[0], "dark 2");
+    addPath(newGroup, cutPts, dkProps, rot, pos[1], "dark 1");
+    addPath(newGroup, cutPts, ltProps, rot, pos[2], "light 2");
+    addPath(newGroup, cutPts, ltProps, rot, pos[3], "light 1");
     
-    //check slit layer exists, make if needed
-    //if layer exitst, delete existing slit marks
+    doc.selection = null;
+}
+
+function slitMarks(orientation, cutTrue) {
+    var alertRef = "|) Marks - " + orientation + " Slit Marks";
+    var doc = app.activeDocument;
+    var sel = doc.selection;
+    if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Slit - CL&D Digital", "Finishing Marks - CL&D Digital"], ["IndigoK"])) {
+        return;
+    }
+    sel = selObj(sel[0]);
+    var noColor = new NoColor();
     
-    //make slit lines and press marks, if whiteTrue then 5indigo dashes
+    var wtColor;
+    if (colorExists("5Indigo")) {
+        wtColor = new SpotColor();
+        wtColor.spot = doc.spots.getByName("5Indigo");
+        wtColor.tint = 100;
+    } else {
+        wtColor = newCMYKcolor(0, 0, 0, 0);
+    }
     
-    //make slit width text
+    var blkColor = new SpotColor();
+    blkColor.spot = doc.spots.getByName("IndigoK");
+    blkColor.tint = 100;
+    var sltPth1Props = {
+        closed: false,
+        stroked: true,
+        strokeOverprint: false,
+        strokeWidth: 1,
+        strokeColor: blkColor,
+        strokeCap: StrokeCap.BUTTENDCAP,
+        strokeDashes: [],
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
+    };
+    var sltPth2Props = {
+        closed: false,
+        stroked: true,
+        strokeOverprint: false,
+        strokeWidth: 1,
+        strokeColor: wtColor,
+        strokeCap: StrokeCap.BUTTENDCAP,
+        strokeDashes: [12],
+        filled: false,
+        fillColor: noColor,
+        fillOverprint: false
+    };
+    var sltLayer = prepLayer("Slit - CL&D Digital");
     
-    //check finishing marks layer exists, make if needed
-    //if layer existed, delete existing cut marks
+    //build art:
+
+    if (cutTrue) {
+        cutMarks(orientation);
+    }
     
-    //if cutTrue, create cut marks
+    var sltGroup = sltLayer.groupItems.add();
+    sltGroup.name = "|) Slit Marks";
+    
+    var lftSltPts, rtSltPts, sltTrans, tpReptPts, btmReptPts, reptTrans, txtPos;
+    if (orientation === "Portrait") {
+        lftSltPts = [[sel.x - 9, sel.y], [sel.x - 9, sel.y - sel.ht]];
+        rtSltPts = [[sel.x + sel.wd + 9, sel.y], [sel.x + sel.wd + 9, sel.y - sel.ht]];
+        sltTrans = [[0.5, 0], [-0.5, 0]];
+        tpReptPts = [rtSltPts[0], [rtSltPts[0][0] + 14, rtSltPts[0][1]]];
+        btmReptPts = [rtSltPts[1], [rtSltPts[1][0] + 14, rtSltPts[1][1]]];
+        reptTrans = [-sel.wd - 14 - 18, 0];
+        txtPos = [sel.x + sel.wd + 9 + 1, sel.y + 8];
+    } else if (orientation === "Landscape") {
+        lftSltPts = [[sel.x, sel.y + 9], [sel.x + sel.wd, sel.y + 9]];
+        rtSltPts = [[sel.x, sel.y - sel.ht - 9], [sel.x + sel.wd, sel.y - sel.ht - 9]];
+        sltTrans = [[0, -0.5], [0, 0.5]];
+        tpReptPts = [rtSltPts[0], [rtSltPts[0][0], rtSltPts[0][1] - 14]];
+        btmReptPts = [rtSltPts[1], [rtSltPts[1][0], rtSltPts[1][1] - 14]];
+        reptTrans = [0, sel.ht + 14 + 18];
+        txtPos = [sel.x + 5, sel.y + 9 + 15];
+    }
+    
+    //make slit lines w/o graphic styles:
+    var sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'right slit guide'; // right, top
+    var slt1 = addPath(sltSubGroup, rtSltPts, sltPth1Props, '', '', 'black line');
+    var slt2 = addPath(sltSubGroup, rtSltPts, sltPth2Props, '', '', 'white dashes');
+    sltSubGroup.translate(sltTrans[0][0], sltTrans[0][1]);
+    
+    sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'left slit guide'; // left, bottom
+    slt1 = addPath(sltSubGroup, lftSltPts, sltPth1Props, '', '', 'black line');
+    slt2 = addPath(sltSubGroup, lftSltPts, sltPth2Props, '', '', 'white dashes');
+    sltSubGroup.translate(sltTrans[1][0], sltTrans[1][1]);
+    
+    //make marks for finishing w/o graphic styles
+    sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'top repeat guides';
+    sltPth2Props.strokeDashes = [7];
+    var thisPath;
+    thisPath = addPath(sltSubGroup, tpReptPts, sltPth1Props, '', '', 'black line');
+    thisPath.duplicate(sltSubGroup, ElementPlacement.INSIDE).translate(reptTrans[0], reptTrans[1]);
+    thisPath = addPath(sltSubGroup, tpReptPts, sltPth2Props, '', '', 'white dashes');
+    thisPath.duplicate(sltSubGroup, ElementPlacement.INSIDE).translate(reptTrans[0], reptTrans[1]);
+    thisPath.rotate(180, 1, 1, 1, 1, Transformation.CENTER);
+    
+    sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'bottom repeat guides';
+    thisPath = addPath(sltSubGroup, btmReptPts, sltPth1Props, '', '', 'black line');
+    thisPath.duplicate(sltSubGroup, ElementPlacement.INSIDE).translate(reptTrans[0], reptTrans[1]);
+    thisPath = addPath(sltSubGroup, btmReptPts, sltPth2Props, '', '', 'white dashes');
+    thisPath.duplicate(sltSubGroup, ElementPlacement.INSIDE).translate(reptTrans[0], reptTrans[1]);
+    thisPath.rotate(180, 1, 1, 1, 1, Transformation.CENTER);
+
+    //make slit point text
+    sltSubGroup = sltGroup.groupItems.add();
+    sltSubGroup.name = 'slit width';
+    var sltText = sltSubGroup.textFrames.add();
+    sltText.contents = 'Slit width =  ()';
+    sltText.name = 'actualDate:{SLITWIDTH}';
+    sltText.left = txtPos[0];
+    sltText.top = txtPos[1];
+    sltText.paragraphs[0].paragraphAttributes.justification = Justification.LEFT;
+    sltText.paragraphs[0].characterAttributes.fillColor = blkColor;
+    sltText.paragraphs[0].characterAttributes.size = 10;
+    sltText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
+    if (orientation === 'Portrait') {
+        sltText.rotate(-90, 1, 1, 1, 1, Transformation.BOTTOMLEFT);
+    }
+    sltText = sltText.duplicate(sltText, ElementPlacement.PLACEAFTER);
+    sltText.paragraphs[0].characterAttributes.stroked = true;
+    sltText.paragraphs[0].characterAttributes.strokeColor = wtColor;
+    sltText.paragraphs[0].characterAttributes.strokeWeight = 2;
+
+    doc.selection = null;
 }
 
 function tearMarks(orientation) {
@@ -592,5 +805,7 @@ function foldQuad(orientation) {
     // for side gusset bag
 }
 
+//slitMarks ('Landscape', true);
+//slitMarks ('Portrait', true);
 //sleeveInfo ('Left');
 //sleeveInfo ('Right');
