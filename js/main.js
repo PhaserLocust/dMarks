@@ -136,6 +136,13 @@ $(document).ready(function () {
     //listen for ai document save
     //csInterface.addEventListener("documentAfterSave", onDocSaved);
     
+    //listen for dlayers event, call relevant methods
+    csInterface.addEventListener("com.rps.dlayers", function (e) {
+        if (e.data === 'substrateArt') {
+            csInterface.evalScript('substrateArt()');
+        }
+    });
+    
     $(window).load(function () {
         console.log(Date() + ' window loaded');
         onDocActivated('');

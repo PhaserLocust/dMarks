@@ -1,7 +1,7 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global $, Folder, app, CMYKColor, SpotColor, NoColor, StrokeJoin, roundTo, StrokeCap, Justification, textFonts, ElementPlacement, Transformation*/
 
-// returns bool
+// returns bool as string
 function docIsOpen() {
     return app.documents.length > 0 ? 'true' : 'false';
 }
@@ -44,7 +44,7 @@ function prepLayer(layerName) {
     return layerRef;
 }
 
-//takes array of needed names, displays message, returns bool
+// takes & compares prerequisites, displays message, returns bool
 function prereqCheck(alertRef, selected, selectionCount, selectionTypeName, layersNeeded, colorsNeeded) {
     var message = '';
     var plural = '';
@@ -53,11 +53,13 @@ function prereqCheck(alertRef, selected, selectionCount, selectionTypeName, laye
     //selection
     if (selected !== '') {
         //selection count
-        if (selectionCount > 1) {
-            plural = 's';
-        }
-        if (selected.length !== selectionCount) {
-            message = message + '\n\n Please select exactly ' + selectionCount + ' item' + plural + '.';
+        if (selectionCount !== '') {
+            if (selectionCount > 1) {
+                plural = 's';
+            }
+            if (selected.length !== selectionCount) {
+                message = message + '\n\n Please select exactly ' + selectionCount + ' item' + plural + '.';
+            }
         }
         
         //selection typeName
@@ -92,6 +94,7 @@ function prereqCheck(alertRef, selected, selectionCount, selectionTypeName, laye
     }
 }
 
+// creates a new path item using given info
 function addPath(layerRef, pathPts, pathProps, rotation, pathPos, pathName) {
     var newPath = layerRef.pathItems.add();
     newPath.setEntirePath(pathPts);
@@ -111,6 +114,7 @@ function addPath(layerRef, pathPts, pathProps, rotation, pathPos, pathName) {
     return newPath;
 }
 
+// returns object with only relevant properties of given pathRef
 function selObj(pathRef) {
     var selectedObj = {
         pos: pathRef.position,
@@ -319,7 +323,7 @@ function cutterGuides() {
         }
     }
     newPath.name = "Contour Guide";
-    //apply offset effect, jntp 2 = mitre, 1 = bevel, 0 = round
+    // apply offset effect, jntp 2 = mitre, 1 = bevel, 0 = round
     var xmlstring = '<LiveEffect name="Adobe Offset Path"><Dict data="R mlim 4 R ofst 4.5 I jntp 0"/></LiveEffect>';
     newPath.applyEffect(xmlstring);
     app.redraw();
@@ -414,7 +418,7 @@ function sleeveInfo(clearSide) {
     var infoLayer = prepLayer("Info - CL&D Digital");
     var sltLayer = prepLayer("Slit - CL&D Digital");
     
-    //calc info (1mm = 2.83464567pts)
+    // calc info (1mm = 2.83464567pts)
     var layflat = (sel.wd - 5.66929134) / 2;
     var dimY = sel.y + 14;
     var locY = sel.y - sel.ht;
@@ -435,7 +439,7 @@ function sleeveInfo(clearSide) {
     var arwLeftPts = [[0, 0], [3.5, 1.75], [3.5, -1.75]];
     var arwRightPts = [[0, 0], [-3.5, 1.75], [-3.5, -1.75]];
     
-    //build art:
+    // build art:
     var slvInfoGroup = infoLayer.groupItems.add();
     slvInfoGroup.name = "|) Sleeve Info KEY";
     var dimGroup = slvInfoGroup.groupItems.add();
@@ -511,11 +515,11 @@ function sleeveInfo(clearSide) {
                 [offsetPts[2][0] + 5, locY - 8 + 1.75], "left arrowhead");
     }
     
-    //slit marks:
+    // slit marks:
     var sltGroup = sltLayer.groupItems.add();
     sltGroup.name = "|) Slit Marks";
     
-    //make vert slit lines w/o graphic styles:
+    // make vert slit lines w/o graphic styles:
     var sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'slit guide';
     var slt1 = addPath(sltSubGroup, sltPts, sltPth1Props, '', '', 'black line');
@@ -529,7 +533,7 @@ function sleeveInfo(clearSide) {
     slt1.translate(0.5);
     */
     
-    //make hor. marks for finishing w/o graphic styles
+    // make hor. marks for finishing w/o graphic styles
     sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'top repeat guides';
     sltPth2Props.strokeDashes = [7];
@@ -545,7 +549,7 @@ function sleeveInfo(clearSide) {
     sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'bottom repeat guide'));
     */
     
-    //make slit point text
+    // make slit point text
     sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'slit width';
     var sltText = sltSubGroup.textFrames.add();
@@ -682,7 +686,7 @@ function slitMarks(orientation, cutTrue) {
     };
     var sltLayer = prepLayer("Slit - CL&D Digital");
     
-    //build art:
+    // build art:
 
     if (cutTrue) {
         cutMarks(orientation);
@@ -710,20 +714,20 @@ function slitMarks(orientation, cutTrue) {
         txtPos = [sel.x + 5, sel.y + 9 + 15];
     }
     
-    //make slit lines w/o graphic styles:
+    // make slit lines w/o graphic styles:
     var sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'right slit guide'; // right, top
     var slt1 = addPath(sltSubGroup, rtSltPts, sltPth1Props, '', '', 'black line');
     var slt2 = addPath(sltSubGroup, rtSltPts, sltPth2Props, '', '', 'white dashes');
-    sltSubGroup.translate(sltTrans[0][0], sltTrans[0][1]);
+    //sltSubGroup.translate(sltTrans[0][0], sltTrans[0][1]);
     
     sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'left slit guide'; // left, bottom
     slt1 = addPath(sltSubGroup, lftSltPts, sltPth1Props, '', '', 'black line');
     slt2 = addPath(sltSubGroup, lftSltPts, sltPth2Props, '', '', 'white dashes');
-    sltSubGroup.translate(sltTrans[1][0], sltTrans[1][1]);
+    //sltSubGroup.translate(sltTrans[1][0], sltTrans[1][1]);
     
-    //make marks for finishing w/o graphic styles
+    // make marks for finishing w/o graphic styles
     sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'top repeat guides';
     sltPth2Props.strokeDashes = [7];
@@ -742,7 +746,7 @@ function slitMarks(orientation, cutTrue) {
     thisPath.duplicate(sltSubGroup, ElementPlacement.INSIDE).translate(reptTrans[0], reptTrans[1]);
     thisPath.rotate(180, 1, 1, 1, 1, Transformation.CENTER);
 
-    //make slit point text
+    // make slit point text
     sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'slit width';
     var sltText = sltSubGroup.textFrames.add();
@@ -764,6 +768,53 @@ function slitMarks(orientation, cutTrue) {
 
     doc.selection = null;
 }
+
+function substrateArt() {
+    var alertRef = "|) Marks - Substrate Art";
+    var doc = app.activeDocument;
+    var sel = doc.selection;
+    if (!prereqCheck(alertRef, sel, '', 'PathItem', ["Substrate - CL&D Digital"], ["Indigo Substrate"])) {
+        return;
+    }
+    //sel = selObj(sel[0]);
+    
+    var substColor = new SpotColor();
+    substColor.spot = doc.spots.getByName("Indigo Substrate");
+    substColor.tint = 100;
+
+    //var substPts = [[-1, 1], [9, 1], [9, 0], [0, 0], [0, -9], [-1, -9]]
+    
+    var substProps = {
+        name: '|) Substrate',
+        closed: true,
+        stroked: false,
+        filled: true,
+        fillColor: substColor,
+        fillOverprint: false
+    };
+    
+    var substLayer = prepLayer("Substrate - CL&D Digital");
+    
+    // build art:
+        
+    //addPath(substLayer, substPts, substProps, '', pos[0], '|) Substrate');
+    
+    // duplicate selection
+    var i;
+    for (i = 0; i < sel.length; i++) {
+        var substArt = sel[i].duplicate(substLayer, ElementPlacement.INSIDE)
+        // apply properties
+        for (theProp in substProps) {
+            if (substProps.hasOwnProperty(theProp)) {
+                substArt[theProp] = substProps[theProp];
+            }
+        }
+    }
+    
+    doc.selection = null;
+}
+
+///////////////////////////
 
 function tearMarks(orientation) {
     // ask for distance from edge
@@ -804,8 +855,3 @@ function foldTriple(orientation) {
 function foldQuad(orientation) {
     // for side gusset bag
 }
-
-//slitMarks ('Landscape', true);
-//slitMarks ('Portrait', true);
-//sleeveInfo ('Left');
-//sleeveInfo ('Right');

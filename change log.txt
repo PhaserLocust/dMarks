@@ -1,6 +1,13 @@
 ////////////////////////////////
-//    |) Marks Change Log    //
+//    |) Marks Change Log     //
 ////////////////////////////////
+
+06/??/17 v1.1
+    - added listener for dlayers events, for substrate art creation
+    + added fill art creation
+    + added MDO Sleeve?
+    + added slit marks only(auto app)
+    - fixed slit lines .5pt offset, they are now exactly .125" from die.
 
 04/18/17 v1.0.0
     - Initial release
