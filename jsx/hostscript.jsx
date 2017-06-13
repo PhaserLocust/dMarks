@@ -346,7 +346,7 @@ function sleeveInfo(clearSide) {
     var alertRef = "|) Marks - Sleeve Info";
     var doc = app.activeDocument;
     var sel = doc.selection;
-    if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Info - CL&D Digital", "Slit - CL&D Digital"], ["5Indigo", "IndigoK"])) {
+    if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Info - CL&D Digital", "Slit - CL&D Digital", "Substrate - CL&D Digital"], ["5Indigo", "IndigoK", "Indigo Substrate"])) {
         return;
     }
     sel = selObj(sel[0]);
@@ -391,6 +391,16 @@ function sleeveInfo(clearSide) {
         fillColor: noColor,
         fillOverprint: false
     };
+    var substColor = new SpotColor();
+    substColor.spot = doc.spots.getByName("Indigo Substrate");
+    substColor.tint = 100;
+    var substProps = {
+        closed: true,
+        stroked: false,
+        filled: true,
+        fillColor: substColor,
+        fillOverprint: false
+    };
     var sltPth1Props = {
         closed: false,
         stroked: true,
@@ -417,9 +427,14 @@ function sleeveInfo(clearSide) {
     };
     var infoLayer = prepLayer("Info - CL&D Digital");
     var sltLayer = prepLayer("Slit - CL&D Digital");
+    var substLayer = prepLayer("Substrate - CL&D Digital");
     
     // calc info (1mm = 2.83464567pts)
     var layflat = (sel.wd - 5.66929134) / 2;
+    var mdo = false;
+    if (ptsToMM(layflat, 2) > 153.5) {
+        mdo = true;
+    }
     var dimY = sel.y + 14;
     var locY = sel.y - sel.ht;
     var lOffset, rOffset, sltRotate, offsetPts;
@@ -515,75 +530,111 @@ function sleeveInfo(clearSide) {
                 [offsetPts[2][0] + 5, locY - 8 + 1.75], "left arrowhead");
     }
     
-    // slit marks:
-    var sltGroup = sltLayer.groupItems.add();
-    sltGroup.name = "|) Slit Marks";
-    
-    // make vert slit lines w/o graphic styles:
-    var sltSubGroup = sltGroup.groupItems.add();
-    sltSubGroup.name = 'slit guide';
-    var slt1 = addPath(sltSubGroup, sltPts, sltPth1Props, '', '', 'black line');
-    var slt2 = addPath(sltSubGroup, sltPts, sltPth2Props, '', '', 'white dashes');
-    sltSubGroup.translate(0.5);
-    /*
-    //make vert slit lines with graphic styles(named style must exist in document, not style library):
-    var sltStyle = doc.graphicStyles.getByName("Slit Lines-Black & 5Indigo");
-    var slt1 = addPath(sltGroup, sltPts, sltPth1Props, '', '', 'slit guide');
-    sltStyle.applyTo(slt1);
-    slt1.translate(0.5);
-    */
-    
-    // make hor. marks for finishing w/o graphic styles
-    sltSubGroup = sltGroup.groupItems.add();
-    sltSubGroup.name = 'top repeat guides';
-    sltPth2Props.strokeDashes = [7];
-    addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth1Props, '', '', 'black line');
-    addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth2Props, '', '', 'white dashes');
-    sltSubGroup = sltGroup.groupItems.add();
-    sltSubGroup.name = 'bottom repeat guides';
-    addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'black line');
-    addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth2Props, '', '', 'white dashes');
-    /*
-    //make hor. marks for finishing with graphic styles(named style must exist in document, not style library)
-    sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth1Props, '', '', 'top repeat guide'));
-    sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'bottom repeat guide'));
-    */
-    
-    // make slit point text
-    sltSubGroup = sltGroup.groupItems.add();
-    sltSubGroup.name = 'slit width';
-    var sltText = sltSubGroup.textFrames.add();
-    if (sel.ht < 215) {
-        // 2 lines of text
-        sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm\nLF ≥ ' + ptsToMM(layflat, 2) + 'mm';
-        //sltText.name = 'actualDate:{SLITWIDTH}';
-        sltText.left = sltX + 1;
-        sltText.top = sel.y + 19;
+    // substrate:
+    var substPts;
+    if (!mdo) {
+        if (clearSide === 'Left') {
+            substPts = [[sel.x - 11.339, sel.y],
+                        [sel.x + sel.wd + 11.339, sel.y],
+                        [sel.x + sel.wd + 11.339, sel.y - sel.ht],
+                        [sel.x - 11.339, sel.y - sel.ht]];
+        } else {
+            substPts = [[sel.x - 11.339, sel.y],
+                        [sel.x + sel.wd + 11.339, sel.y],
+                        [sel.x + sel.wd + 11.339, sel.y - sel.ht],
+                        [sel.x - 11.339, sel.y - sel.ht]];
+        }
     } else {
-        sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
-        //sltText.name = 'actualDate:{SLITWIDTH}';
-        sltText.left = sltX + 1;
-        sltText.top = sel.y + 8;
+        if (clearSide === 'Left') {
+            substPts = [[sel.x - 36.85, sel.y],
+                        [sel.x + sel.wd, sel.y],
+                        [sel.x + sel.wd, sel.y - sel.ht],
+                        [sel.x - 36.85, sel.y - sel.ht]];
+        } else {
+            substPts = [sel.pos,
+                        [sel.x + sel.wd + 36.85, sel.y],
+                        [sel.x + sel.wd + 36.85, sel.y - sel.ht],
+                        [sel.x, sel.y - sel.ht]];
+        }
     }
-    for (i = 0; i < sltText.paragraphs.length; i++) {
-        sltText.paragraphs[i].paragraphAttributes.justification = Justification.LEFT;
-        sltText.paragraphs[i].characterAttributes.fillColor = blkColor;
-        sltText.paragraphs[i].characterAttributes.size = 10;
-        sltText.paragraphs[i].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
-    }
-    sltText.rotate(-90, 1, 1, 1, 1, Transformation.BOTTOMLEFT);
-    sltText = sltText.duplicate(sltText, ElementPlacement.PLACEAFTER);
-    for (i = 0; i < sltText.paragraphs.length; i++) {
-        sltText.paragraphs[i].characterAttributes.stroked = true;
-        sltText.paragraphs[i].characterAttributes.strokeColor = wtColor;
-        sltText.paragraphs[i].characterAttributes.strokeWeight = 2;
-    }
+    var subst = addPath(substLayer, substPts, substProps, '', '', "|) Substrate");
     
-    // rotate slit group if needed:
-    if (clearSide === 'Right') {
-        sltGroup.rotate(180, 1, 1, 1, 1, Transformation.CENTER);
-        sltGroup.translate(-(sel.wd + (8 * 2.83464567) + sltGroup.width));
+    // slit marks:
+    if (!mdo) {
+        var sltGroup = sltLayer.groupItems.add();
+        sltGroup.name = "|) Slit Marks";
+
+        // make vert slit lines w/o graphic styles:
+        var sltSubGroup = sltGroup.groupItems.add();
+        sltSubGroup.name = 'slit guide';
+        var slt1 = addPath(sltSubGroup, sltPts, sltPth1Props, '', '', 'black line');
+        var slt2 = addPath(sltSubGroup, sltPts, sltPth2Props, '', '', 'white dashes');
+        sltSubGroup.translate(0.5);
+        /*
+        //make vert slit lines with graphic styles(named style must exist in document, not style library):
+        var sltStyle = doc.graphicStyles.getByName("Slit Lines-Black & 5Indigo");
+        var slt1 = addPath(sltGroup, sltPts, sltPth1Props, '', '', 'slit guide');
+        sltStyle.applyTo(slt1);
+        slt1.translate(0.5);
+        */
+
+        // make hor. marks for finishing w/o graphic styles
+        sltSubGroup = sltGroup.groupItems.add();
+        sltSubGroup.name = 'top repeat guides';
+        sltPth2Props.strokeDashes = [7];
+        addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth1Props, '', '', 'black line');
+        addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth2Props, '', '', 'white dashes');
+        sltSubGroup = sltGroup.groupItems.add();
+        sltSubGroup.name = 'bottom repeat guides';
+        addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'black line');
+        addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth2Props, '', '', 'white dashes');
+        /*
+        //make hor. marks for finishing with graphic styles(named style must exist in document, not style library)
+        sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[0][0] + 14, sltPts[0][1]], sltPts[0]], sltPth1Props, '', '', 'top repeat guide'));
+        sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'bottom repeat guide'));
+        */
+
+        // make slit point text
+        sltSubGroup = sltGroup.groupItems.add();
+        sltSubGroup.name = 'slit width';
+        var sltText = sltSubGroup.textFrames.add();
+        if (sel.ht < 215) {
+            // 2 lines of text
+            sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm\nLF ≥ ' + ptsToMM(layflat, 2) + 'mm';
+            //sltText.name = 'actualDate:{SLITWIDTH}';
+            sltText.left = sltX + 1;
+            sltText.top = sel.y + 19;
+        } else {
+            sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
+            //sltText.name = 'actualDate:{SLITWIDTH}';
+            sltText.left = sltX + 1;
+            sltText.top = sel.y + 8;
+        }
+        for (i = 0; i < sltText.paragraphs.length; i++) {
+            sltText.paragraphs[i].paragraphAttributes.justification = Justification.LEFT;
+            sltText.paragraphs[i].characterAttributes.fillColor = blkColor;
+            sltText.paragraphs[i].characterAttributes.size = 10;
+            sltText.paragraphs[i].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
+        }
+        sltText.rotate(-90, 1, 1, 1, 1, Transformation.BOTTOMLEFT);
+        sltText = sltText.duplicate(sltText, ElementPlacement.PLACEAFTER);
+        for (i = 0; i < sltText.paragraphs.length; i++) {
+            sltText.paragraphs[i].characterAttributes.stroked = true;
+            sltText.paragraphs[i].characterAttributes.strokeColor = wtColor;
+            sltText.paragraphs[i].characterAttributes.strokeWeight = 2;
+        }
+
+        // rotate slit group if needed:
+        if (clearSide === 'Right') {
+            sltGroup.rotate(180, 1, 1, 1, 1, Transformation.CENTER);
+            sltGroup.translate(-(sel.wd + (8 * 2.83464567) + sltGroup.width));
+        }
+    } else {
+        // select substrate art to build slit marks from
+        doc.selection = [subst];
+        slitMarks("Landscape", true);
     }
+        
     doc.selection = null;
 }
 
@@ -592,7 +643,7 @@ function cutMarks(orientation) {
     var doc = app.activeDocument;
     var sel = doc.selection;
     if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Finishing Marks - CL&D Digital"], ["IndigoK"])) {
-        return;
+        return false;
     }
     sel = selObj(sel[0]);
     var dkColor = new SpotColor();
@@ -636,13 +687,20 @@ function cutMarks(orientation) {
     addPath(newGroup, cutPts, ltProps, rot, pos[3], "light 1");
     
     doc.selection = null;
+    
+    return true;
 }
 
 function slitMarks(orientation, cutTrue) {
+    var layersNeeded = ["Slit - CL&D Digital"];
     var alertRef = "|) Marks - " + orientation + " Slit Marks";
+    if (cutTrue) {
+        layersNeeded = ["Slit - CL&D Digital", "Finishing Marks - CL&D Digital"];
+        alertRef = "|) Marks - " + orientation + " Slit & Cut Marks";
+    }
     var doc = app.activeDocument;
     var sel = doc.selection;
-    if (!prereqCheck(alertRef, sel, 1, 'PathItem', ["Slit - CL&D Digital", "Finishing Marks - CL&D Digital"], ["IndigoK"])) {
+    if (!prereqCheck(alertRef, sel, 1, 'PathItem', layersNeeded, ["IndigoK"])) {
         return;
     }
     sel = selObj(sel[0]);
@@ -689,7 +747,9 @@ function slitMarks(orientation, cutTrue) {
     // build art:
 
     if (cutTrue) {
-        cutMarks(orientation);
+        if (!cutMarks(orientation)) {
+            return;
+        }
     }
     
     var sltGroup = sltLayer.groupItems.add();
@@ -802,8 +862,9 @@ function substrateArt() {
     // duplicate selection
     var i;
     for (i = 0; i < sel.length; i++) {
-        var substArt = sel[i].duplicate(substLayer, ElementPlacement.INSIDE)
+        var substArt = sel[i].duplicate(substLayer, ElementPlacement.INSIDE);
         // apply properties
+        var theProp;
         for (theProp in substProps) {
             if (substProps.hasOwnProperty(theProp)) {
                 substArt[theProp] = substProps[theProp];

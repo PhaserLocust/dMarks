@@ -94,6 +94,14 @@ $(document).ready(function () {
         csInterface.evalScript('cutMarks("Portrait")');
     });
     
+    $('#slitOnlyLand').click(function () {
+        csInterface.evalScript('slitMarks("Landscape", false)');
+    });
+    
+    $('#slitOnlyPort').click(function () {
+        csInterface.evalScript('slitMarks("Portrait", false)');
+    });
+    
     $('#slitLand').click(function () {
         csInterface.evalScript('slitMarks("Landscape", true)');
     });
@@ -140,6 +148,8 @@ $(document).ready(function () {
     csInterface.addEventListener("com.rps.dlayers", function (e) {
         if (e.data === 'substrateArt') {
             csInterface.evalScript('substrateArt()');
+        } else if (e.data === 'zeroSubstrate') {
+            csInterface.evalScript('zeroSubstrate()');
         }
     });
     
