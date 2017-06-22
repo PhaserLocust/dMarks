@@ -4,11 +4,15 @@
 
     + added fill art creation
 
+06/21/17 v1.1.1
+    - fixed dynamic slit width text object naming for standard sleeve setup
+    - fixed short side offset dimension labeling on proof sleeve info
+
 06/14/17 v1.1.0
     - added mdo setup for sleeves greater than 153.5mm LF
     - added slit marks only options(auto app)
     - added listener for dlayers events, for substrate art creation
-    - fixed slit lines .5pt offset, they are now exactly .125" from die.
+    - fixed slit lines .5pt offset, they are now exactly .125" from die
 
 04/18/17 v1.0.0
     - Initial release

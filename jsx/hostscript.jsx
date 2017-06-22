@@ -440,10 +440,10 @@ function sleeveInfo(clearSide) {
     var lOffset, rOffset, sltRotate, offsetPts;
     if (clearSide === 'Left') {
         rOffset = layflat * 0.4; //short side offset
-        lOffset = layflat - rOffset; // long side offset
+        lOffset = layflat - rOffset + 5.669; // long side offset
     } else if (clearSide === 'Right') {
+        rOffset = layflat - lOffset + 5.669; // long side offset
         lOffset = layflat * 0.4; //short side offset
-        rOffset = layflat - lOffset; // long side offset
     }
     var sltX = sel.x + sel.wd + (4 * 2.83464567); // 4mm bleed
     var sltPts = [[sltX, sel.y], [sltX, sel.y - sel.ht]];
@@ -600,13 +600,15 @@ function sleeveInfo(clearSide) {
         var sltText = sltSubGroup.textFrames.add();
         if (sel.ht < 215) {
             // 2 lines of text
-            sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm\nLF ≥ ' + ptsToMM(layflat, 2) + 'mm';
-            //sltText.name = 'actualDate:{SLITWIDTH}';
+            // sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm\nLF ≥ ' + ptsToMM(layflat, 2) + 'mm';
+            sltText.contents = 'Slit width of art = '
+            sltText.name = 'actualDate:{SLITWIDTH}';
             sltText.left = sltX + 1;
             sltText.top = sel.y + 19;
         } else {
-            sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
-            //sltText.name = 'actualDate:{SLITWIDTH}';
+            // sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
+            sltText.contents = 'Slit width of art = '
+            sltText.name = 'actualDate:{SLITWIDTH}';
             sltText.left = sltX + 1;
             sltText.top = sel.y + 8;
         }
