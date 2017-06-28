@@ -4,6 +4,9 @@
 
     + added fill art creation
 
+06/21/17 v1.1.1(2)
+    - fixed NaN sleeve offset dimension for sleeves with clear on the right
+
 06/21/17 v1.1.1
     - fixed dynamic slit width text object naming for standard sleeve setup
     - fixed short side offset dimension labeling on proof sleeve info

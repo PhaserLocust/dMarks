@@ -440,10 +440,10 @@ function sleeveInfo(clearSide) {
     var lOffset, rOffset, sltRotate, offsetPts;
     if (clearSide === 'Left') {
         rOffset = layflat * 0.4; //short side offset
-        lOffset = layflat - rOffset + 5.669; // long side offset
+        lOffset = layflat - rOffset + 5.669; // long side offset, uses short side offset to calculate
     } else if (clearSide === 'Right') {
-        rOffset = layflat - lOffset + 5.669; // long side offset
         lOffset = layflat * 0.4; //short side offset
+        rOffset = layflat - lOffset + 5.669; // long side offset, uses short side offset to calculate
     }
     var sltX = sel.x + sel.wd + (4 * 2.83464567); // 4mm bleed
     var sltPts = [[sltX, sel.y], [sltX, sel.y - sel.ht]];
