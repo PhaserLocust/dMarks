@@ -594,28 +594,48 @@ function sleeveInfo(clearSide) {
         sltStyle.applyTo(addPath(sltSubGroup, [[sltPts[1][0] + 14, sltPts[1][1]], sltPts[1]], sltPth1Props, '', '', 'bottom repeat guide'));
         */
 
-        // make slit point text
+        // make slit text
         sltSubGroup = sltGroup.groupItems.add();
         sltSubGroup.name = 'slit width';
-        var sltText = sltSubGroup.textFrames.add();
-        if (sel.ht < 215) {
-            // 2 lines of text
-            // sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm\nLF ≥ ' + ptsToMM(layflat, 2) + 'mm';
-            sltText.contents = 'Slit width of art = '
-            sltText.name = 'actualDate:{SLITWIDTH}';
-            sltText.left = sltX + 1;
-            sltText.top = sel.y + 19;
+        ///var sltText = sltSubGroup.textFrames.add();
+        
+        var rectRef;
+        if (sel.ht < 121) {
+            //position for 3 lines of text, wide frame
+            rectRef = sltSubGroup.pathItems.rectangle(sel.y + 28, sltX + 1, sel.ht - 4, 30);
+        } else if (sel.ht < 199) {
+            //position for 2 lines of text
+            rectRef = sltSubGroup.pathItems.rectangle(sel.y + 16, sltX + 1, sel.ht - 8, 20);
         } else {
-            // sltText.contents = 'Slit width of art = ' + ptsToMM(sel.wd, 2) + 'mm   LF ≥ ' + ptsToMM(layflat, 2) + 'mm';
-            sltText.contents = 'Slit width of art = '
-            sltText.name = 'actualDate:{SLITWIDTH}';
-            sltText.left = sltX + 1;
-            sltText.top = sel.y + 8;
+            //position for 1 line of text
+            rectRef = sltSubGroup.pathItems.rectangle(sel.y + 6, sltX + 1, sel.ht - 8, 10);
         }
+        
+        var sltText = sltSubGroup.textFrames.areaText(rectRef);
+        
+        sltText.contents = 'Slit width of art = ';
+        sltText.name = 'actualDate:{SLITWIDTH}';
+        sltText.textRange.characterAttributes.fillColor = blkColor;
+        sltText.textRange.paragraphAttributes.justification = Justification.LEFT;
+        sltText.textRange.characterAttributes.size = 10;
+        sltText.textRange.characterAttributes.autoLeading = false;
+        sltText.textRange.characterAttributes.leading = 10;
+        sltText.textRange.characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
+        
+        sltText.rotate(-90, 1, 1, 1, 1, Transformation.BOTTOMLEFT);
+        sltText = sltText.duplicate(sltText, ElementPlacement.PLACEAFTER);
+        
+        sltText.textRange.characterAttributes.fillColor = wtColor;
+        sltText.textRange.characterAttributes.strokeColor = wtColor;
+        sltText.textRange.characterAttributes.strokeWeight = 2;
+        
+        /*
         for (i = 0; i < sltText.paragraphs.length; i++) {
             sltText.paragraphs[i].paragraphAttributes.justification = Justification.LEFT;
+            sltText.paragraphs[i].strokeMiterLimit = 1;
             sltText.paragraphs[i].characterAttributes.fillColor = blkColor;
             sltText.paragraphs[i].characterAttributes.size = 10;
+            sltText.paragraphs[i].characterAttributes.leading = 10;
             sltText.paragraphs[i].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
         }
         sltText.rotate(-90, 1, 1, 1, 1, Transformation.BOTTOMLEFT);
@@ -625,6 +645,7 @@ function sleeveInfo(clearSide) {
             sltText.paragraphs[i].characterAttributes.strokeColor = wtColor;
             sltText.paragraphs[i].characterAttributes.strokeWeight = 2;
         }
+        */
 
         // rotate slit group if needed:
         if (clearSide === 'Right') {
@@ -858,9 +879,6 @@ function substrateArt() {
     var substLayer = prepLayer("Substrate - CL&D Digital");
     
     // build art:
-        
-    //addPath(substLayer, substPts, substProps, '', pos[0], '|) Substrate');
-    
     // duplicate selection
     var i;
     for (i = 0; i < sel.length; i++) {

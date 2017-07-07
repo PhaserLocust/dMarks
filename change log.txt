@@ -4,7 +4,11 @@
 
     + added fill art creation
 
-06/21/17 v1.1.1(2)
+07/06/17 v1.1.2(1)
+    - fixed/improved slit mark text placement on short sleeves, now uses text frame
+        - supports cut lengths as small as 73pts(~1" or 26mm)
+
+06/28/17 v1.1.1(2)
     - fixed NaN sleeve offset dimension for sleeves with clear on the right
 
 06/21/17 v1.1.1
