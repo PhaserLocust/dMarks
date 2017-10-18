@@ -431,6 +431,8 @@ function sleeveInfo(clearSide) {
     
     // calc info (1mm = 2.83464567pts)
     var layflat = (sel.wd - 5.66929134) / 2;
+	
+	//to determine mdo, read MDO property from Database or request info from other extension...
     var mdo = false;
     if (ptsToMM(layflat, 2) > 153.5) {
         mdo = true;
@@ -567,8 +569,8 @@ function sleeveInfo(clearSide) {
         // make vert slit lines w/o graphic styles:
         var sltSubGroup = sltGroup.groupItems.add();
         sltSubGroup.name = 'slit guide';
-        var slt1 = addPath(sltSubGroup, sltPts, sltPth1Props, '', '', 'black line');
-        var slt2 = addPath(sltSubGroup, sltPts, sltPth2Props, '', '', 'white dashes');
+        addPath(sltSubGroup, sltPts, sltPth1Props, '', '', 'black line');
+        addPath(sltSubGroup, sltPts, sltPth2Props, '', '', 'white dashes');
         sltSubGroup.translate(0.5);
         /*
         //make vert slit lines with graphic styles(named style must exist in document, not style library):
@@ -778,11 +780,12 @@ function slitMarks(orientation, cutTrue) {
     var sltGroup = sltLayer.groupItems.add();
     sltGroup.name = "|) Slit Marks";
     
-    var lftSltPts, rtSltPts, sltTrans, tpReptPts, btmReptPts, reptTrans, txtPos;
+    var lftSltPts, rtSltPts, tpReptPts, btmReptPts, reptTrans, txtPos;
+		// var sltTrans;
     if (orientation === "Portrait") {
         lftSltPts = [[sel.x - 9, sel.y], [sel.x - 9, sel.y - sel.ht]];
         rtSltPts = [[sel.x + sel.wd + 9, sel.y], [sel.x + sel.wd + 9, sel.y - sel.ht]];
-        sltTrans = [[0.5, 0], [-0.5, 0]];
+        //sltTrans = [[0.5, 0], [-0.5, 0]];
         tpReptPts = [rtSltPts[0], [rtSltPts[0][0] + 14, rtSltPts[0][1]]];
         btmReptPts = [rtSltPts[1], [rtSltPts[1][0] + 14, rtSltPts[1][1]]];
         reptTrans = [-sel.wd - 14 - 18, 0];
@@ -790,7 +793,7 @@ function slitMarks(orientation, cutTrue) {
     } else if (orientation === "Landscape") {
         lftSltPts = [[sel.x, sel.y + 9], [sel.x + sel.wd, sel.y + 9]];
         rtSltPts = [[sel.x, sel.y - sel.ht - 9], [sel.x + sel.wd, sel.y - sel.ht - 9]];
-        sltTrans = [[0, -0.5], [0, 0.5]];
+        //sltTrans = [[0, -0.5], [0, 0.5]];
         tpReptPts = [rtSltPts[0], [rtSltPts[0][0], rtSltPts[0][1] - 14]];
         btmReptPts = [rtSltPts[1], [rtSltPts[1][0], rtSltPts[1][1] - 14]];
         reptTrans = [0, sel.ht + 14 + 18];
@@ -800,14 +803,14 @@ function slitMarks(orientation, cutTrue) {
     // make slit lines w/o graphic styles:
     var sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'right slit guide'; // right, top
-    var slt1 = addPath(sltSubGroup, rtSltPts, sltPth1Props, '', '', 'black line');
-    var slt2 = addPath(sltSubGroup, rtSltPts, sltPth2Props, '', '', 'white dashes');
+    addPath(sltSubGroup, rtSltPts, sltPth1Props, '', '', 'black line');
+    addPath(sltSubGroup, rtSltPts, sltPth2Props, '', '', 'white dashes');
     //sltSubGroup.translate(sltTrans[0][0], sltTrans[0][1]);
     
     sltSubGroup = sltGroup.groupItems.add();
     sltSubGroup.name = 'left slit guide'; // left, bottom
-    slt1 = addPath(sltSubGroup, lftSltPts, sltPth1Props, '', '', 'black line');
-    slt2 = addPath(sltSubGroup, lftSltPts, sltPth2Props, '', '', 'white dashes');
+    addPath(sltSubGroup, lftSltPts, sltPth1Props, '', '', 'black line');
+    addPath(sltSubGroup, lftSltPts, sltPth2Props, '', '', 'white dashes');
     //sltSubGroup.translate(sltTrans[1][0], sltTrans[1][1]);
     
     // make marks for finishing w/o graphic styles

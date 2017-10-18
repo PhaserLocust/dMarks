@@ -4,6 +4,11 @@
 
     + added fill art creation
 
+10/??/17 v1.2.1(1)
+		- increased max width for single row panel layout
+				- add 34px for each button
+		+ allowed mdo setup for smaller sleeves 
+
 07/06/17 v1.1.2(1)
     - fixed/improved slit mark text placement on short sleeves, now uses text frame
         - supports cut lengths as small as 73pts(~1" or 26mm)
