@@ -2,30 +2,32 @@
 //    |) Marks Change Log     //
 ////////////////////////////////
 
-    + added fill art creation
+	+ add fill art creation
+	+ allowed mdo setup for smaller sleeves
 
-10/??/17 v1.2.1(1)
-		- increased max width for single row panel layout
-				- add 34px for each button
-		+ allowed mdo setup for smaller sleeves 
+11/16/17 v1.2.0(1)
+	- increased max width for single row panel layout
+		- add 34px for each button
+	- added white behind cut marks, added when 5Indigo swatch exists
+	- increased slitting repeat guide marks to 18pts to allow for easier manual stepping
 
 07/06/17 v1.1.2(1)
-    - fixed/improved slit mark text placement on short sleeves, now uses text frame
-        - supports cut lengths as small as 73pts(~1" or 26mm)
+	- fixed/improved slit mark text placement on short sleeves, now uses text frame
+		- supports cut lengths as small as 73pts(~1" or 26mm)
 
 06/28/17 v1.1.1(2)
-    - fixed NaN sleeve offset dimension for sleeves with clear on the right
+	- fixed NaN sleeve offset dimension for sleeves with clear on the right
 
 06/21/17 v1.1.1
-    - fixed dynamic slit width text object naming for standard sleeve setup
-    - fixed short side offset dimension labeling on proof sleeve info
+	- fixed dynamic slit width text object naming for standard sleeve setup
+	- fixed short side offset dimension labeling on proof sleeve info
 
 06/14/17 v1.1.0
-    - added mdo setup for sleeves greater than 153.5mm LF
-    - added slit marks only options(auto app)
-    - added listener for dlayers events, for substrate art creation
-    - fixed slit lines .5pt offset, they are now exactly .125" from die
+	- added mdo setup for sleeves greater than 153.5mm LF
+	- added slit marks only options(auto app)
+	- added listener for dlayers events, for substrate art creation
+	- fixed slit lines .5pt offset, they are now exactly .125" from die
 
 04/18/17 v1.0.0
-    - Initial release
-    - Includes: Corner Marks, Camera Marks, Enclosing Rectangle, Cutter Guide, Sleeve Info, Cut Marks, & Slit Marks
+	- Initial release
+	- Includes: Corner Marks, Camera Marks, Enclosing Rectangle, Cutter Guide, Sleeve Info, Cut Marks, & Slit Marks

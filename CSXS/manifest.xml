@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="5.0" ExtensionBundleId="com.rps.dmarks" ExtensionBundleVersion="1.2.1"
+<ExtensionManifest Version="5.0" ExtensionBundleId="com.rps.dmarks" ExtensionBundleVersion="1.2.0"
 		ExtensionBundleName="|) Marks" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<ExtensionList>
 		<Extension Id="com.rps.dmarks" Version="1.2" />
 	</ExtensionList>
 	<ExecutionEnvironment>
 		<HostList>
-            <Host Name="ILST" Version="18.0" />
+      <Host Name="ILST" Version="18.0" />
 		</HostList>
 		<LocaleList>
 			<Locale Code="All" />
@@ -39,7 +39,7 @@
                         </MinSize>
                         <MaxSize>
                             <Height>412</Height>
-                            <Width>474</Width>
+                            <Width>482</Width>
                         </MaxSize>
 					</Geometry>
 					<Icons>
