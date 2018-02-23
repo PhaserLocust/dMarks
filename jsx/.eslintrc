@@ -1,0 +1,13 @@
+{
+	"parserOptions": {
+		"ecmaFeatures": {
+			"jsx": true
+		}
+	},
+	"env": {
+		"browser": true,
+		"jquery": true
+	},
+	"globals": {
+	}
+}

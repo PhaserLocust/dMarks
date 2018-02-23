@@ -5,6 +5,11 @@
 	+ add fill art creation
 	+ allowed mdo setup for smaller sleeves
 
+02/??/18 v1.3.0(1)
+	+ new preflight stamp button
+		+ builds list of colors used in file, along with OGV and Pantone color builds
+		- relies on DInks server api
+
 11/16/17 v1.2.0(1)
 	- increased max width for single row panel layout
 		- add 34px for each button
