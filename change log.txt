@@ -3,12 +3,16 @@
 ////////////////////////////////
 
 	+ add fill art creation
+	+ tools for dimensioning selection
 	+ allowed mdo setup for smaller sleeves
+	+ interface with DLayers to create necessary layers
 
-02/??/18 v1.3.0(1)
-	+ new preflight stamp button
-		+ builds list of colors used in file, along with OGV and Pantone color builds
+03/??/18 v1.3.0(1)
+	- new preflight stamp button
+		- builds list of colors used in file, along with OGV and Pantone color builds
+		- scales with size of geometric bounds
 		- relies on DInks server api
+	- fixed sleeve dimension arrowhead being created in wrong group
 
 11/16/17 v1.2.0(1)
 	- increased max width for single row panel layout

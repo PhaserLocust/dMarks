@@ -1,8 +1,16 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 2, maxerr: 50 */
-/*global app, alert, CMYKColor, SpotColor, NoColor, StrokeJoin, ptsToMM, ptsToInches, getTime, anchorAt, StrokeCap, Justification, textFonts, ElementPlacement, Transformation, InkPrintStatus */
+/*global app, alert, 
+	CMYKColor, SpotColor, NoColor, StrokeJoin, StrokeCap, Justification, textFonts, ElementPlacement, Transformation, InkPrintStatus,
+	ptsToMM, ptsToInches, getTime, anchorAt, getSelSize, getVisChars,
+	prepLayer, prereqCheck,
+	newCMYKcolor, colorExists, inksList
+*/
 
-/* functions used in main.js with csInterface.evalScript() begin with 'eval' */
-/*eslint no-unused-vars: ["error", { "varsIgnorePattern": "eval" }]*/
+/* note functions used in main.js with csInterface.evalScript() begin with 'eval' */
+
+
+//// Below @includes add funtions listed in above global statement ////
+//// functions listed as globals for eslinting                     ////
 
 // adds JSON functionality to .jsx, for formatting complex objects to return:
 //@include "json2.jsx";
@@ -10,31 +18,26 @@
 // helper functions
 //@include 'helpers.jsx'
 
+// user interaction functions
+//@include 'dialogs.jsx'
+
+// prep functions
+//@include 'prepFunctions.jsx'
+
+// color functions
+//@include 'colors.jsx'
+
+// preflight Stamp
+//@include 'preflightStamp.jsx'
+
 //////////////////////////////////////////
+
+// job/GtG variable, used in Preflight stamp, persists as default prompt value
+var jobNumber = '';
 
 // returns bool as string
 function eval_docIsOpen() {
   return app.documents.length > 0 ? 'true' : 'false';
-}
-
-function newCMYKcolor(c, m, y, k) {
-  var newCMYKColor = new CMYKColor();
-  newCMYKColor.black = k;
-  newCMYKColor.cyan = c;
-  newCMYKColor.magenta = m;
-  newCMYKColor.yellow = y;
-  return newCMYKColor;
-}
-
-function colorExists(colorName) {
-  var colorList = app.activeDocument.swatches;
-  var i;
-  for (i = 0; i < colorList.length; i++) {
-    if (colorList[i].name === colorName) {
-      return true;
-    }
-  }
-  return false;
 }
 
 function layerExists(layerName) {
@@ -46,63 +49,6 @@ function layerExists(layerName) {
     }
   }
   return false;
-}
-
-function prepLayer(layerName) {
-  var layerRef = app.activeDocument.layers.getByName(layerName);
-  layerRef.locked = false;
-  layerRef.visible = true;
-  return layerRef;
-}
-
-// takes & compares prerequisites, displays message, returns bool
-function prereqCheck(alertRef, selected, selectionCount, selectionTypeName, layersNeeded, colorsNeeded) {
-  var message = '';
-  var plural = '';
-  var i, thisItem, thisLayer, thisColor;
-  
-  //selection
-  if (selected !== '') {
-    //selection count
-    if (selectionCount !== '') {
-      if (selectionCount > 1) {
-        plural = 's';
-      }
-      if (selected.length !== selectionCount) {
-        message = message + '\n\n Please select exactly ' + selectionCount + ' item' + plural + '.';
-      }
-    }
-    
-    //selection typeName
-    for (i = 0; i < selected; i++) {
-      thisItem = selected[i];
-      if (thisItem.typename !== selectionTypeName) {
-        message = message + '\n\n Please select only ' + selectionTypeName + ' objects.';
-      }
-    }
-  }
-
-  //layers exist
-  for (i = 0; i < layersNeeded.length; i++) {
-    thisLayer = layersNeeded[i];
-    if (!layerExists(thisLayer)) {
-      message = message + '\n\n Please create a "' + thisLayer + '" layer.';
-    }
-  }
-  //colors exist
-  for (i = 0; i < colorsNeeded.length; i++) {
-    thisColor = colorsNeeded[i];
-    if (!colorExists(thisColor)) {
-      message = message + '\n\n Please create a "' + thisColor + '" swatch.';
-    }
-  }
-  
-  if (message === '') {
-    return true;
-  } else {
-    alert(alertRef + message);
-    return false;
-  }
 }
 
 // creates a new path item using given info
@@ -276,8 +222,7 @@ function eval_encloseRect() {
     fillOverprint: false
   };
   
-  var newRect = sel.lyr.pathItems.rectangle(sel.y, sel.x,
-                         sel.wd, sel.ht, false);
+  var newRect = sel.lyr.pathItems.rectangle(sel.y, sel.x, sel.wd, sel.ht, false);
   newRect.move(doc.selection[0], ElementPlacement.PLACEBEFORE);
   var theProp;
   for (theProp in pathProps) {
@@ -528,7 +473,7 @@ function eval_sleeveInfo(clearSide) {
         [offsetPts[1][0] - 5 - 3.5, locY - 8 + 1.75], "right arrowhead");
     addPath(locSubGroup, [[offsetPts[2][0] + 7, locY - 8], [foldText.left - 5, locY - 8]],
         locPthProps, '', '', "left path");
-    addPath(dimSubGroup, arwLeftPts, arwPthProps, '',
+    addPath(locSubGroup, arwLeftPts, arwPthProps, '',
         [offsetPts[2][0] + 5, locY - 8 + 1.75], "left arrowhead");
   }
   
@@ -934,242 +879,7 @@ function eval_substrateArt() {
   doc.selection = null;
 }
 
-/////////////
-
-// return list of all inks used by current document's current state
-// filters inks by printingStatus property, inks on non-printing and hidden layers are ignored
-// returned list will include process CMY&K inks...
-function eval_inksList() {
-	var doc = app.activeDocument;
-	
-	var inkCount = doc.inkList.length;
-	var i, thisInk, inkList = [];
-	for(i = 0; i < inkCount; i++) {
-		thisInk = doc.inkList[i];
-		if (thisInk.inkInfo.printingStatus === InkPrintStatus.ENABLEINK) {
-			inkList.push(thisInk.name);
-		}
-  }
-	return JSON.stringify(inkList);
-}
-
-function eval_preflightStamp(data) {
-	var alertRef = "|) Marks - Preflight Stamp";
-  var doc = app.activeDocument;
-  var sel = doc.selection;
-  //if (!prereqCheck(alertRef, sel, '', 'PathItem', [''], [])) { return; }
-	
-	// make new layer, maybe use com.rps.dlayers for proper placement?
-	var newLayer = doc.layers.add();
-  newLayer.name = 'Preflight - CL&D Digital';
-
-	
-	// make new group
-	var stampGroup = prepLayer('Preflight - CL&D Digital').groupItems.add();
-  stampGroup.name = 'Stamp';
-	
-	// make new background rectangle
-	var rectRef = stampGroup.pathItems.rectangle(0, 0, 170, 150);
-	rectRef.name = 'background';
-	rectRef.stroked = false;
-	rectRef.filled = true;
-	rectRef.fillColor = newCMYKcolor(0, 0, 0, 0);
-	rectRef.fillOverprint = false;
-	rectRef.opacity = 75.0;
-	
-	// make file name text
-  var nameText = stampGroup.textFrames.add();
-  nameText.contents = doc.name;
-	anchorAt(nameText, 85, -13.5);
-  nameText.paragraphs[0].paragraphAttributes.justification = Justification.CENTER;
-  nameText.paragraphs[0].characterAttributes.fillColor = newCMYKcolor(0, 0, 0, 100);
-  nameText.paragraphs[0].characterAttributes.size = 14;
-  nameText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Heavy");
-	while (nameText.width > 170) {
-		nameText.paragraphs[0].characterAttributes.size = nameText.paragraphs[0].characterAttributes.size - 1;
-	}
-	
-	// make preflight ok text
-	
-	// make initial text - to do
-	
-	// make date text
-	var now = new Date();
-	var dateText = stampGroup.textFrames.add();
-  dateText.contents = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear().toString().slice(-2) + ' ' + getTime(now);
-	anchorAt(dateText, 164, -26.5);
-  dateText.paragraphs[0].paragraphAttributes.justification = Justification.RIGHT;
-  dateText.paragraphs[0].characterAttributes.fillColor = newCMYKcolor(0, 0, 0, 100);
-  dateText.paragraphs[0].characterAttributes.size = 12;
-  dateText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
-	
-	// make dimensions text
-	var dimGroup = stampGroup.groupItems.add();
-  dimGroup.name = 'Dimensions';
-	var dimText = dimGroup.textFrames.add();
-  dimText.contents = getSelSize(sel);
-	anchorAt(dimText, 31, -39.5);
-  dimText.paragraphs[0].paragraphAttributes.justification = Justification.LEFT;
-  dimText.paragraphs[0].characterAttributes.fillColor = newCMYKcolor(0, 0, 0, 100);
-  dimText.paragraphs[0].characterAttributes.size = 12;
-  dimText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
-	dimText = dimGroup.textFrames.add();
-  dimText.contents = 'Die:';
-	anchorAt(dimText, 6, -39.5);
-  dimText.paragraphs[0].paragraphAttributes.justification = Justification.LEFT;
-  dimText.paragraphs[0].characterAttributes.fillColor = newCMYKcolor(0, 0, 0, 100);
-  dimText.paragraphs[0].characterAttributes.size = 12;
-  dimText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Roman");
-	
-	// make color art
-	var colorsGroup = stampGroup.groupItems.add();
-  colorsGroup.name = 'color information';
-	
-	var yPos, i, thisColor;
-	yPos = -65;
-	for (i = 0; i < data.length; i++) {
-		thisColor = preflightCol(colorsGroup, data[i]);
-		thisColor.position = [0, yPos];
-		if (thisColor.height < 20) {
-			yPos = yPos - 5 - 12;
-		} else {
-			yPos = yPos - 5 - 27;
-		}
-	}
-	
-	// get finished height, set background rect height, scale stamp
-	rectRef.height = 0 - yPos;
-}
-
-function preflightCol(stampGroup, data) {
-	// make new group
-	var colGroup = stampGroup.groupItems.add()
-	colGroup.name = data.name;
-	
-	// make color rectangle
-	var rectRef = colGroup.pathItems.rectangle(0, 0, 4, 12);
-	rectRef.stroked = false;
-	rectRef.filled = true;
-	rectRef.fillColor = newCMYKcolor(0, 0, 75, 0);
-	rectRef.fillOverprint = false;
-	rectRef.opacity = 100.0;
-	
-	// make OGV circle
-	makeRecOGV(data, colGroup);
-	
-	// make name point text
-  var nameText = colGroup.textFrames.add();
-  nameText.contents = data.name;
-  nameText.paragraphs[0].paragraphAttributes.justification = Justification.LEFT;
-  nameText.paragraphs[0].characterAttributes.fillColor = newCMYKcolor(0, 0, 0, 100);
-  nameText.paragraphs[0].characterAttributes.size = 12;
-  nameText.paragraphs[0].characterAttributes.textFont = textFonts.getByName("Avenir-Medium");
-	nameText.resize(85.0, 100.0);
-	anchorAt(nameText, 16, -10);
-	while (nameText.width > 142) {
-		nameText.paragraphs[0].characterAttributes.size = nameText.paragraphs[0].characterAttributes.size - 1;
-	}
-	
-	// make trailing color rect
-	rectRef = rectRef.duplicate(rectRef, ElementPlacement.PLACEAFTER);
-	rectRef.width = 12 + (142 - nameText.width) - 3;
-	rectRef.translate(nameText.position[0] + nameText.width + 3);
-	
-	return colGroup;
-}
-
-function makeRecOGV(data, colGroup) {
-	if (data.recommendOrange) {
-		makeCirc('+ Orange', newCMYKcolor(0, 50, 100, 0), colGroup);
-	} else if (data.recommendGreen) {
-		makeCirc('+ Green', newCMYKcolor(100, 0, 100, 0), colGroup);
-	} else if (data.recommendViolet) {
-		makeCirc('+ Violet', newCMYKcolor(100, 100, 0, 0), colGroup);
-	} else {
-		makeCMYKcirc(colGroup);
-	}
-	
-}
-
-function makeCirc(name, color, colGroup) {
-	var ellipsRef = colGroup.pathItems.ellipse(-2, 6, 8, 8);
-	ellipsRef.name = name
-	ellipsRef.stroked = false;
-	ellipsRef.filled = true;
-	ellipsRef.fillColor = color;
-	ellipsRef.fillOverprint = false;
-	ellipsRef.opacity = 100.0;
-	return ellipsRef;
-}
-
-function makeCMYKcirc(colGroup) {
-	var circGroup = colGroup.groupItems.add()
-	circGroup.name = 'CMYK';
-	
-	var rectRef = circGroup.pathItems.rectangle(-2, 6, 4, 4);
-	rectRef.stroked = false;
-	rectRef.filled = true;
-	rectRef.fillColor = newCMYKcolor(100, 0, 0, 0);
-	rectRef.fillOverprint = false;
-	rectRef.opacity = 100.0;
-	
-	rectRef = circGroup.pathItems.rectangle(-2, 10, 4, 4);
-	rectRef.stroked = false;
-	rectRef.filled = true;
-	rectRef.fillColor = newCMYKcolor(0, 100, 0, 0);
-	rectRef.fillOverprint = false;
-	rectRef.opacity = 100.0;
-	
-	rectRef = circGroup.pathItems.rectangle(-6, 6, 4, 4);
-	rectRef.stroked = false;
-	rectRef.filled = true;
-	rectRef.fillColor = newCMYKcolor(0, 0, 100, 0);
-	rectRef.fillOverprint = false;
-	rectRef.opacity = 100.0;
-	
-	rectRef = circGroup.pathItems.rectangle(-6, 10, 4, 4);
-	rectRef.stroked = false;
-	rectRef.filled = true;
-	rectRef.fillColor = newCMYKcolor(0, 0, 0, 100);
-	rectRef.fillOverprint = false;
-	rectRef.opacity = 100.0;
-	
-	var ellipsRef = circGroup.pathItems.ellipse(-2, 6, 8, 8);
-	ellipsRef.stroked = false;
-	ellipsRef.filled = false;
-	
-	circGroup.clipped = true;
-	
-	return circGroup;
-}
-
-// get size of selection
-function getSelSize(sel) {
-	var selCount = sel.length;
-	if (selCount === 0) {
-		return ' ';
-	}
-	var i, thisObjGB;
-	var left = sel[0].geometricBounds[0],
-			top = sel[0].geometricBounds[1],
-			right = sel[0].geometricBounds[2],
-			bottom = sel[0].geometricBounds[3];
-	for (i = 1; i < selCount; i++) {
-		thisObjGB = sel[i].geometricBounds;
-		if (thisObjGB[0] < left) {left = thisObjGB[0]}
-		if (thisObjGB[1] > top) {top = thisObjGB[1]}
-		if (thisObjGB[2] > right) {right = thisObjGB[2]}
-		if (thisObjGB[3] < bottom) {bottom = thisObjGB[3]}
-	}
-	
-	var w = Math.abs(right - left) 
-	var h = Math.abs(top - bottom);
-	
-	return ptsToInches(w, 4) + '" x ' + ptsToInches(h, 4) + '"\r(' + ptsToMM(w, 3) + 'mm x ' + ptsToMM(h, 3) + 'mm)';
-}
-
-/////////////
-
+/*
 function tearMarks(orientation) {
   // ask for distance from edge
   
@@ -1209,3 +919,4 @@ function foldTriple(orientation) {
 function foldQuad(orientation) {
   // for side gusset bag
 }
+*/

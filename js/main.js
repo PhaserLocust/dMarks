@@ -1,5 +1,5 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 2, maxerr: 50 */
-/*global $, window, location, CSInterface, SystemPath, themeManager*/
+/*global $, window, location, CSInterface, themeManager*/
 
 $(document).ready(function () {
 	'use strict';
@@ -14,14 +14,18 @@ $(document).ready(function () {
 		$('#' + divID).hide();
 		$('#' + divID + 'Text').text('');
 	}
-    
+  
+	/*
 	function onDocSaved(event) {
 		console.log(Date() + ' doc saved');
 		console.log(event.data);
 	}
-    
+	*/
+  
+	/*
 	function onDocDeactivated(event) {
 	}
+	*/
 	
 	function setEnabled(name) {
 		// disables ui if passed ''
@@ -112,7 +116,9 @@ $(document).ready(function () {
 	var getColorData = function (resString) {
 		var res = JSON.parse(resString);
 		
+		// Pantone suffixes to ignore, since database format is "PANTONE XX"
 		var pSufs = [' C', ' c', ' M', ' m', ' CP', ' cp', ' U', ' u', ' UP', ' up',  ' XGC', ' xgc'];
+		
 		var color, i, j;
 		var list = [];
 		for (i = 0; i < res.length; i++) {
@@ -132,36 +138,59 @@ $(document).ready(function () {
 			list.push(color);
 		}
 		
+		if (list.length === 0) {
+			csInterface.evalScript('eval_preflightStamp(' + JSON.stringify([]) + ')');
+			return;
+		}
+		
 		// get data from server
 		$.get("http://digital:8085/api/color/list", {"c": list}, function (data) {
-			console.log('theData:');
-			console.log(JSON.stringify(data));
 			// add back in colors not returned by api (colors not in database)
-			var names = [];
-			var i;
-			for (i = 0; i < data.length; i++) {
-				names.push(data[i].name); // get list of names returned in data
-			}
-			if (names.length < list.length) {
-				for (i = 0; i < names.length; i++) {
-					list.splice(list.indexOf(names[i]), 1); // remove returned names form orig list
+			// add swatch name to corresponding objects
+			var i, j, nm, obj, match;
+			var allData = [];
+			for (i = 0; i < list.length; i++) {
+				nm = list[i];
+				match = false;
+				for (j = 0; j < data.length; j++) {
+					if (data[j].name === nm) {
+						obj = data.splice(j, 1);
+						obj = obj[0];
+						obj.swatch = res[i];
+						allData.push(obj);
+						match = true;
+						break;
+					}
 				}
-				for (i = 0; i < list.length; i++) {
-					// add colors not returnded as objects to data:
-					data.push({
-						name: list[i]
+				if (!match) {
+					allData.push({
+						name: nm,
+						swatch: res[i]
 					});
 				}
 			}
 			
+			// to create layer via dlayers:
+			// request necessary layers are present
+			
+			// listen for response
+			
+			// release listener
+			
 			// build stamp art
-			csInterface.evalScript('eval_preflightStamp(' + JSON.stringify(data) + ')');
+			csInterface.evalScript('eval_preflightStamp(' + JSON.stringify(allData) + ')');
+			
+		}).fail(function (e) {
+			var message = "|) Marks - Preflight Stamp";
+			message += '\n\n There was a problem retriveing color information: ';
+			message += '\n ' + e.status + ' ' + e.statusText;
+			csInterface.evalScript('eval_Alert(' + JSON.stringify(message) + ')');
 		});
 	};
 
 	$('#preflightStamp').click(function () {
 		// get colors from document
-		csInterface.evalScript('eval_inksList()', getColorData);
+		csInterface.evalScript('eval_InksForStamp()', getColorData);
 	});
 
 	//////////
@@ -171,7 +200,7 @@ $(document).ready(function () {
 	});
 
 	$('#confirm').click(function () {
-		console.log('confirmed');
+		//console.log('confirmed');
 	});
 
 	$('#notifierClose').click(function () {
@@ -179,7 +208,7 @@ $(document).ready(function () {
 	});
 
 	$('#retryButton').click(function () {
-		console.log(Date() + ' Retry');
+		//console.log(Date() + ' Retry');
 		closeNotifier('retry');
 	});
 
@@ -200,7 +229,7 @@ $(document).ready(function () {
 	//listen for dlayers event, call relevant methods
 	csInterface.addEventListener("com.rps.dlayers", function (e) {
 		if (e.data === 'substrateArt') {
-			csInterface.evalScript('eval_substrateArt()');
+			csInterface.evalScript('eval_substrateArt()'); // should add response to dlayers when done...
 		} else if (e.data === 'zeroSubstrate') {
 			csInterface.evalScript('zeroSubstrate()');
 		}
