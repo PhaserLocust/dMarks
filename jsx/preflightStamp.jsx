@@ -62,13 +62,13 @@ function eval_preflightStamp(data) {
 	
 	
 	
-	var theResult = new pfDialog().run();
+	// var theResult = new pfDialog().run();
 	
 	
 	
 	
-	alert("dialog success!");
-	alert(theResult);
+	// alert("dialog success!");
+	// alert(theResult);
 	
 	
 	
